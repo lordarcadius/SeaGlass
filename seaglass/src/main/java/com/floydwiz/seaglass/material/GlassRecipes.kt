@@ -37,6 +37,11 @@ internal sealed interface Body {
     class Backdrop(val blur: Float, val saturation: Float, val brightness: Float, val fills: List<Brush>) : Body
 
     class Solid(val color: Color) : Body
+
+    /** Elliptical radial gradient fill without blur; centre and radii are fractions of the size. */
+    class Radial(val cx: Float, val cy: Float, val rx: Float, val ry: Float, val stops: List<Pair<Float, Color>>) : Body
+
+    data object None : Body
 }
 
 /** CSS pixel values in recipes.js are rounded to 0.1 (`r1()`/`px()`); mirror that so numbers match. */
@@ -148,7 +153,8 @@ internal object GlassRecipes {
                 }
             }
 
-            GlassFinish.Clear -> if (dark) {
+            GlassFinish.Clear, GlassFinish.Lens -> if (dark) {
+                val bo = if (finish == GlassFinish.Lens) 1f else 0f
                 var smoke = when (c.level) {
                     2 -> 0.86f
                     1 -> 0.6f
@@ -162,22 +168,92 @@ internal object GlassRecipes {
                     )
                 } else {
                     Body.Backdrop(
-                        16f, 2f, 1.55f,
-                        listOf(lg(white(0.2f), white(0.1f), white(0.12f))),
+                        16f, 2f, 1.55f + bo * 0.1f,
+                        listOf(lg(white(0.2f + bo * 0.1f), white(0.1f + bo * 0.08f), white(0.12f + bo * 0.08f))),
                     )
                 }
             } else {
+                val bo = if (finish == GlassFinish.Lens) 1f else 0f
                 Body.Backdrop(
-                    16f, 1.8f, 1.06f,
+                    16f, 1.8f, 1.06f + bo * 0.04f,
                     listOf(
                         lg(
-                            white(0.6f + ta),
-                            rgba(250, 253, 255, 0.4f + ta),
-                            rgba(236, 248, 255, 0.32f + ta),
+                            white(0.6f + ta + bo * 0.12f),
+                            rgba(250, 253, 255, 0.4f + ta + bo * 0.1f),
+                            rgba(236, 248, 255, 0.32f + ta + bo * 0.1f),
                         ),
                     ),
                 )
             }
+
+            GlassFinish.Pearl -> if (dark) {
+                if (c.level == 2) {
+                    Body.Solid(Color(0xFF2C3134))
+                } else {
+                    Body.Backdrop(
+                        8f, 1.4f, 1f,
+                        listOf(lg(rgba(242, 246, 248, 0.97f), rgba(224, 232, 236, 0.96f), rgba(206, 216, 221, 0.96f))),
+                    )
+                }
+            } else {
+                Body.Backdrop(
+                    8f, 1.4f, 1.02f,
+                    listOf(lg(Color.White, rgba(252, 254, 255, 0.98f), rgba(240, 247, 250, 0.97f))),
+                )
+            }
+
+            GlassFinish.Fill -> when {
+                c.level == 2 -> Body.Solid(if (dark) p[80] else p[40])
+                dark -> Body.Backdrop(
+                    12f, 1.7f, 1.15f,
+                    listOf(lg(p[60].alpha(0.92f), mix(p[60], p[40], 0.4f).alpha(0.86f), p[40].alpha(0.82f))),
+                )
+                else -> Body.Backdrop(
+                    12f, 1.7f, 1f,
+                    listOf(
+                        lg(
+                            mix(p[40], p[60], 0.42f).alpha(0.96f),
+                            mix(p[40], p[60], 0.3f).alpha(0.95f),
+                            mix(p[40], p[60], 0.18f).alpha(0.95f),
+                        ),
+                    ),
+                )
+            }
+
+            GlassFinish.Ink -> if (dark) {
+                Body.Backdrop(
+                    24f, 1.5f, 1.02f,
+                    listOf(lg(rgba(240, 244, 246, 0.95f), rgba(229, 235, 238, 0.93f), rgba(221, 228, 231, 0.93f))),
+                )
+            } else {
+                Body.Backdrop(
+                    24f, 1.5f, 1f,
+                    listOf(lg(rgba(42, 48, 52, 0.92f), rgba(33, 38, 41, 0.9f), rgba(29, 34, 37, 0.9f))),
+                )
+            }
+
+            GlassFinish.Dry -> if (dark) {
+                Body.Backdrop(
+                    8f, 0.3f, 1f,
+                    listOf(lg(rgba(84, 90, 94, 0.4f), rgba(74, 80, 84, 0.34f), rgba(68, 74, 78, 0.32f))),
+                )
+            } else {
+                Body.Backdrop(
+                    8f, 0.3f, 1.02f,
+                    listOf(lg(rgba(226, 231, 234, 0.74f), rgba(219, 225, 228, 0.66f), rgba(213, 220, 223, 0.64f))),
+                )
+            }
+
+            GlassFinish.Bead -> Body.Radial(
+                0.3f, 0.1f, 1.2f, 1.2f,
+                if (dark) {
+                    listOf(0f to p[80], 1f to p[70])
+                } else {
+                    listOf(0f to mix(p[40], p[60], 0.25f), 0.6f to p[40], 1f to mix(p[40], p[30], 0.5f))
+                },
+            )
+
+            GlassFinish.Plain -> Body.None
 
             GlassFinish.Well -> {
                 val base = if (dark) {
@@ -230,8 +306,13 @@ internal object GlassRecipes {
                 } else {
                     s.well
                 }
-            GlassFinish.Clear -> s.clear
+            GlassFinish.Clear, GlassFinish.Lens -> s.clear
             GlassFinish.Milk -> s.milk
+            GlassFinish.Fill, GlassFinish.Bead -> if (c.dark) p[80] else p[40]
+            GlassFinish.Pearl -> if (c.dark) Color(0xFF2C3134) else s.pearl
+            GlassFinish.Ink -> s.ink
+            GlassFinish.Dry -> s.dry
+            GlassFinish.Plain -> Color.Transparent
         }
     }
 
@@ -242,18 +323,20 @@ internal object GlassRecipes {
 
     private fun reduceTransparencyLayers(finish: GlassFinish, c: GlassContext, drift: Float): LayerSpec {
         val dark = c.dark
-        val line: Color? = when (finish) {
+        val base = if (finish == GlassFinish.Lens) GlassFinish.Clear else finish
+        if (base == GlassFinish.Plain) return LayerSpec(null, null, null, emptyList(), 0f, emptyList(), null, drift)
+        val line: Color? = when (base) {
             GlassFinish.Clear -> c.outline.alpha(0.75f)
-            GlassFinish.Well -> c.outline
+            GlassFinish.Pearl, GlassFinish.Well -> c.outline
             GlassFinish.Milk -> if (dark) white(0.08f) else rgba(23, 28, 31, 0.08f)
             else -> null
         }
         val insets = buildList {
-            if (finish != GlassFinish.Well) add(InsetSpec(0f, 1f, 0f, 0f, white(if (dark) 0.08f else 0.5f)))
+            if (base != GlassFinish.Well && base != GlassFinish.Dry) add(InsetSpec(0f, 1f, 0f, 0f, white(if (dark) 0.08f else 0.5f)))
             if (line != null) add(InsetSpec(0f, 0f, 0f, 1f, line))
         }
-        val milk = finish == GlassFinish.Milk
-        val shadow = if (finish == GlassFinish.Well) {
+        val milk = base == GlassFinish.Milk
+        val shadow = if (base == GlassFinish.Well || base == GlassFinish.Dry || base == GlassFinish.Fill) {
             null
         } else {
             ShadowSpec(
@@ -351,7 +434,7 @@ internal object GlassRecipes {
                 driftOffsetSeconds = drift,
             )
 
-            GlassFinish.Clear -> if (dark) {
+            GlassFinish.Clear, GlassFinish.Lens -> if (dark) {
                 LayerSpec(
                     shadow = ShadowSpec(hs * 0.2f + 5f, hs * 0.12f, 0.94f, 0.88f, rgba(0, 0, 0, 0.5f)),
                     caustic = null,
@@ -480,6 +563,127 @@ internal object GlassRecipes {
                     driftOffsetSeconds = drift,
                 )
             }
+            GlassFinish.Pearl -> LayerSpec(
+                shadow = if (dark) {
+                    ShadowSpec(hs * 0.16f + 3f, hs * 0.12f + 1f, 0.92f, 0.9f, rgba(0, 0, 0, 0.6f))
+                } else {
+                    ShadowSpec(hs * 0.14f + 3f, hs * 0.12f + 1f, 0.92f, 0.9f, rgba(20, 40, 55, 0.3f))
+                },
+                caustic = null,
+                contact = OvalSpec(
+                    0.16f, 2f, min(8f, (hs * 0.2f).roundToInt() + 2f),
+                    if (dark) rgba(0, 0, 0, 0.45f) else rgba(20, 24, 34, 0.18f), 3f, false,
+                ),
+                light = emptyList(),
+                grain = 0f,
+                insets = if (lvl == 2 && dark) {
+                    listOf(InsetSpec(0f, 0f, 0f, 1.5f, c.outline))
+                } else if (dark) {
+                    listOf(
+                        InsetSpec(0f, -hs * 0.18f, hs * 0.24f, -hs * 0.1f, rgba(160, 182, 192, 0.7f)),
+                        InsetSpec(0f, 0f, 0f, 0.5f, rgba(0, 0, 0, 0.2f)),
+                    )
+                } else {
+                    listOf(
+                        InsetSpec(0f, -hs * 0.18f, hs * 0.24f, -hs * 0.1f, rgba(206, 230, 240, 0.9f)),
+                        InsetSpec(0f, 0f, 0f, 0.5f, rgba(30, 50, 60, 0.08f)),
+                    )
+                },
+                rim = when {
+                    lvl == 2 && dark -> RimSpec(
+                        180f,
+                        listOf(0f to white(1f), 0.4f to white(0.3f), 1f to rgba(150, 170, 180, 0.4f)),
+                    )
+                    lvl > 0 -> solidRing(c.outline)
+                    dark -> RimSpec(
+                        180f,
+                        listOf(0f to white(1f), 0.4f to white(0.3f), 1f to rgba(150, 170, 180, 0.4f)),
+                    )
+                    else -> RimSpec(
+                        180f,
+                        listOf(0f to white(1f), 0.4f to white(0.4f), 1f to rgba(190, 210, 220, 0.55f)),
+                    )
+                },
+                driftOffsetSeconds = drift,
+            )
+
+            GlassFinish.Fill -> LayerSpec(
+                shadow = if (dark) {
+                    ShadowSpec(hs * 0.4f + 4f, hs * 0.1f, 0.96f, 0.85f, p[60].alpha(0.7f))
+                } else {
+                    ShadowSpec(hs * 0.4f + 4f, hs * 0.15f, 0.96f, 0.8f, p[60].alpha(0.5f))
+                },
+                caustic = null,
+                contact = null,
+                light = if (lvl == 2) {
+                    emptyList()
+                } else if (dark) {
+                    listOf(
+                        RadialSpec(0.30f, 0f, 0.90f, 0.80f, white(0.3f * ls)),
+                        RadialSpec(0.70f, 1f, 0.70f, 0.60f, p[80].alpha(0.4f * ls)),
+                    )
+                } else {
+                    listOf(RadialSpec(0.30f, 0f, 0.90f, 0.80f, white(0.26f * ls)))
+                },
+                grain = if (lvl == 2) 0f else grain(if (dark) 0.08f else 0.1f),
+                insets = if (dark) {
+                    listOf(
+                        InsetSpec(0f, 1f, 0f, 0f, white(0.4f)),
+                        InsetSpec(0f, -hs * 0.22f, hs * 0.3f, -hs * 0.1f, g.alpha(0.5f * gs)),
+                    )
+                } else {
+                    listOf(
+                        InsetSpec(0f, 1f, 0f, 0f, white(0.45f)),
+                        InsetSpec(0f, -hs * 0.22f, hs * 0.3f, -hs * 0.1f, p[70].alpha(0.45f * gs)),
+                    )
+                },
+                rim = RimSpec(180f, listOf(0f to white(if (dark) 0.45f else 0.6f), 0.45f to white(0f))),
+                driftOffsetSeconds = drift,
+            )
+
+            GlassFinish.Ink -> LayerSpec(
+                shadow = if (dark) {
+                    ShadowSpec(hs * 0.2f + 8f, hs * 0.15f + 4f, 0.95f, 0.9f, rgba(0, 0, 0, 0.55f))
+                } else {
+                    ShadowSpec(hs * 0.2f + 8f, hs * 0.15f + 4f, 0.95f, 0.9f, rgba(20, 30, 40, 0.32f))
+                },
+                caustic = null,
+                contact = null,
+                light = emptyList(),
+                grain = grain(0.05f),
+                insets = emptyList(),
+                rim = RimSpec(180f, listOf(0f to white(if (dark) 1f else 0.32f), 0.4f to white(0f))),
+                driftOffsetSeconds = drift,
+            )
+
+            GlassFinish.Dry -> LayerSpec(
+                shadow = null,
+                caustic = null,
+                contact = null,
+                light = emptyList(),
+                grain = grain(if (dark) 0.18f else 0.3f),
+                insets = listOf(
+                    InsetSpec(0f, 0f, 0f, 1f, if (dark) white(0.04f) else rgba(30, 45, 55, 0.06f)),
+                ),
+                rim = RimSpec(180f, listOf(0f to white(if (dark) 0.14f else 0.75f), 0.45f to white(0f))),
+                driftOffsetSeconds = drift,
+            )
+
+            GlassFinish.Bead -> LayerSpec(
+                shadow = ShadowSpec(3f, 1.5f, 0.9f, 0.9f, if (dark) rgba(0, 0, 0, 0.5f) else p[40].alpha(0.45f)),
+                caustic = null,
+                contact = null,
+                light = emptyList(),
+                grain = 0f,
+                insets = listOf(
+                    InsetSpec(0f, 1f, 1f, 0f, white(if (dark) 0.6f else 0.5f)),
+                    InsetSpec(0f, -1.5f, 2f, 0f, p[10].alpha(if (dark) 0.2f else 0.3f)),
+                ),
+                rim = null,
+                driftOffsetSeconds = drift,
+            )
+
+            GlassFinish.Plain -> LayerSpec(null, null, null, emptyList(), 0f, emptyList(), null, drift)
         }
     }
 

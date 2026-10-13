@@ -80,3 +80,21 @@ Resume from the last entry. Each milestone records what was built, what was veri
   - `GlassBackdrop` takes `backdrop` and `content` slots; glass must be outside the `backdrop` subtree.
   - `interactionSource` is not a parameter of `seaGlass` yet; it arrives with the state model in M2.
 - Known gaps: adaptive tint is a flag on `seaGlass` (recipe branch ported); luminance sampling that sets it automatically is M8. Dark clear glass over bright content is washed out unless `adaptive = true` (seen in the spike, fixed by the flag). Pearl, Fill, Ink, Bead, Dry and Lens finishes, states and the lens shader are M2. Haze blur radius vs CSS blur is not calibrated visually against the canvas.
+
+## M2 — All finishes and the state model
+
+- Built in `:seaglass`:
+  - Finishes Lens, Pearl, Fill, Ink, Dry, Bead and Plain added to `GlassRecipes` (body and layers, including contrast levels and reduce transparency); `GlassFinish` now has twelve entries.
+  - State model: `GlassState` (Rest, Hover, Focus, Press, Disabled), `GlassInteraction` / `rememberGlassInteraction` (hover, press and focus from an `InteractionSource`, animated on the spatial.fast spring, snapped when animators are off), `LocalForcedGlassState` for the catalogue state picker. Hover lifts raised glass 2 dp, moves the shadow +3 dp ×1.05 and adds the top light; surfaces get a 7% content-colour layer. Press scales the element to 0.96 (hit area unchanged), moves the shadow −3 dp ×0.9 and blooms light; surfaces get a 12% layer. Focus draws the halo (1.5 dp ring, 14 dp glow, 34 dp bloom; 3 dp + 2 dp separation ring in high contrast) clipped outside the shape. Disabled draws Dry with 38% content; a pressed Plain draws Clear.
+  - `GlassSurface(finish, shape, role, enabled, tinted, adaptive, interactionSource, onClick, …)`: wraps `seaGlass`, provides `LocalContentColor`, and with `onClick` is hoverable, focusable and pressable.
+  - Lens: `GlassSurface` with `GlassFinish.Lens` draws its backdrop in a separate layer magnified by an AGSL shader on API 33+ (1.12× with a slight bend toward the rim) and by a 1.1× scale on API 31–32. `Modifier.seaGlass(Lens)` alone is the boosted clear finish without magnification.
+  - `Modifier.glassBoardBackground(dark)`: the `BGL` / `BGD` canvas backdrop (base colour, four colour pools, 2 dp lines every 16 dp).
+- Built in `:app`: catalogue scaffold (`CatalogueScreen` with the state picker, `CatalogueSection`, `ThemePanels`, `ThemeStrip` / `ThemeStripPair`, `BoardTheme`) and the C0 Language page: eight composition rules, the ten finishes plus the lens in light and dark, the state matrix (Glass, Clear, Plain, Well, Pearl × five states) and the shapes. Light and dark sit side by side from 600 dp and stack below.
+- Verified on the `Pixel_9_Pro_XL` emulator (API 35, phone): all finishes render in light and dark; state matrix Hover and Focus columns; real touch press shrinks "Send" to 0.96 with bloom; keyboard Tab focuses a specimen, scrolls it into view and draws the halo; high contrast (rings on milk and clear) and reduce transparency (flat solid fills, no blur) render without errors; logcat clean. The new recipes were compared with `recipes.js` run under node (Pearl, Fill, Ink, Dry, Bead, Lens, light and dark) and all values match.
+- Not verified:
+  - Physical mouse hover: `adb shell input` cannot inject hover events here; the forced Hover state is verified and uses the same code path.
+  - The API 31–32 lens fallback (no such emulator image installed).
+  - The state matrix's Press and Disabled columns were not inspected on screen (they need a horizontal scroll), and the state picker was not exercised.
+  - The tablet side-by-side panel layout.
+- Values chosen: the catalogue chrome (state picker, section headings) uses plain Material 3 until the Sea Glass segmented control exists in M3; the state picker affects `ThemePanels` only, not the per-finish strips; below 600 dp the state matrix scrolls horizontally instead of reflowing; "Fill" in the finish table shows a well and a fill bar as in the board, not a switch.
+- Known gaps: hover, press and focus timing uses one spatial.fast spring for scale, lift and light (motion pass is M6); the focus halo is recorded once and faded by alpha, so its colours do not animate; `Modifier.seaGlass` does not magnify a Lens (use `GlassSurface`).

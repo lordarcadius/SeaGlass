@@ -22,6 +22,8 @@ val LocalGlassClock = staticCompositionLocalOf { GlassClock() }
 
 val LocalMotionEnabled = staticCompositionLocalOf { true }
 
+internal val LocalClockOwned = staticCompositionLocalOf { false }
+
 @Composable
 internal fun rememberGlassClock(running: Boolean): GlassClock {
     val clock = remember { GlassClock() }

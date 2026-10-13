@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,8 +33,10 @@ import androidx.navigation.compose.rememberNavController
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.theme.SeaGlassTheme
 import com.floydwiz.seaglasssample.control.ControlSheet
+import com.floydwiz.seaglasssample.control.LocalControls
 import com.floydwiz.seaglasssample.control.ThemeMode
 import com.floydwiz.seaglasssample.control.rememberControlState
+import com.floydwiz.seaglasssample.showcase.catalogue.c0.LanguagePage
 import com.floydwiz.seaglasssample.showcase.spike.SpikeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,16 +91,19 @@ fun ShowcaseApp() {
                 )
             },
         ) { padding ->
+            CompositionLocalProvider(LocalControls provides controls) {
             NavHost(navController, startDestination = Destinations.CATALOGUE) {
                 composable(Destinations.CATALOGUE) {
                     CatalogueHome(padding) { navController.navigate(it.route) }
                 }
                 composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
-                Destinations.all.filter { it != Destinations.spike }.forEach { destination ->
+                composable(Destinations.components[0].route) { LanguagePage(padding) }
+                Destinations.all.filter { it != Destinations.spike && it != Destinations.components[0] }.forEach { destination ->
                     composable(destination.route) {
                         EmptyDestination(destination, Modifier.padding(padding))
                     }
                 }
+            }
             }
         }
 

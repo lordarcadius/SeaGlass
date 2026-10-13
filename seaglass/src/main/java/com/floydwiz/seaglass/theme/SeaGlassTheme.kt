@@ -21,6 +21,7 @@ import com.floydwiz.seaglass.color.dynamicRolePalettes
 import com.floydwiz.seaglass.material.GlassLayers
 import com.floydwiz.seaglass.material.LocalGlassClock
 import com.floydwiz.seaglass.material.LocalGlassLayers
+import com.floydwiz.seaglass.material.LocalClockOwned
 import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.material.rememberGlassClock
 
@@ -54,11 +55,13 @@ fun SeaGlassTheme(
     }
 
     val motionEnabled = remember { ValueAnimator.areAnimatorsEnabled() }
-    val clock = rememberGlassClock(running = motionEnabled && layers.light)
+    val clockOwned = LocalClockOwned.current
+    val clock = if (clockOwned) LocalGlassClock.current else rememberGlassClock(running = motionEnabled && layers.light)
 
     CompositionLocalProvider(
         LocalGlassLayers provides layers,
         LocalGlassClock provides clock,
+        LocalClockOwned provides true,
         LocalMotionEnabled provides motionEnabled,
         LocalSeaGlassDark provides dark,
         LocalGlassContrast provides contrast,

@@ -5,33 +5,48 @@ import android.graphics.Paint
 import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.layer.drawLayer
-import androidx.compose.ui.unit.IntSize
-import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.shadow.DropShadowPainter
 import androidx.compose.ui.graphics.shadow.InnerShadowPainter
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.shape.SeaGlassShape
@@ -40,17 +55,71 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalReduceTransparency
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import dev.chrisbanes.haze.HazeInput
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.hazeBlur
 import kotlin.math.abs
-import kotlin.math.sin
 import kotlin.math.cos
+import kotlin.math.roundToInt
+import kotlin.math.sin
+
+enum class GlassState { Rest, Hover, Focus, Press, Disabled }
+
+/** Forces the state of every glass element below it; used by the catalogue state picker. */
+val LocalForcedGlassState = compositionLocalOf<GlassState?> { null }
+
+/**
+ * Resolved interaction state of one glass element.
+ * - [finish] is the finish actually drawn: disabled becomes Dry, a pressed Plain becomes Clear.
+ * - hover, press and focus are animated 0..1 fractions read only in draw/layer lambdas.
+ */
+@Stable
+class GlassInteraction internal constructor(
+    val finish: GlassFinish,
+    val disabled: Boolean,
+    internal val hover: State<Float>,
+    internal val press: State<Float>,
+    internal val focus: State<Float>,
+)
+
+@Composable
+fun rememberGlassInteraction(
+    finish: GlassFinish,
+    enabled: Boolean = true,
+    interactionSource: InteractionSource? = null,
+): GlassInteraction {
+    val forced = LocalForcedGlassState.current
+    val source = interactionSource ?: remember { MutableInteractionSource() }
+    val realHover = source.collectIsHoveredAsState().value
+    val realPress = source.collectIsPressedAsState().value
+    val realFocus = source.collectIsFocusedAsState().value
+
+    val disabled = !enabled || forced == GlassState.Disabled
+    val pressed = !disabled && (forced == GlassState.Press || (forced == null && realPress))
+    val hovered = !disabled && (forced == GlassState.Hover || (forced == null && realHover))
+    val focused = !disabled && (forced == GlassState.Focus || (forced == null && realFocus))
+
+    val drawn = when {
+        disabled && finish != GlassFinish.Plain && finish != GlassFinish.Dry -> GlassFinish.Dry
+        pressed && finish == GlassFinish.Plain -> GlassFinish.Clear
+        else -> finish
+    }
+
+    val motion = LocalMotionEnabled.current
+    val spring = if (motion) SeaGlassTokens.Motion.SpatialFast else snap()
+    val hover = animateFloatAsState(if (hovered) 1f else 0f, spring, label = "glassHover")
+    val press = animateFloatAsState(if (pressed) 1f else 0f, spring, label = "glassPress")
+    val focus = animateFloatAsState(if (focused) 1f else 0f, spring, label = "glassFocus")
+    return remember(drawn, disabled) { GlassInteraction(drawn, disabled, hover, press, focus) }
+}
+
+internal enum class Stages { All, Frame, Body, Inner }
 
 /**
  * Draws one finish of the glass stack on this element, back to front:
- * - behind the element: tinted shadow, caustic, contact shadow;
- * - clipped to [shape]: backdrop blur + tint, light pool, grain, volume shadows, rim.
+ * - behind the element: focus halo, tinted shadow, caustic, contact shadow;
+ * - clipped to [shape]: backdrop blur + tint, light pool, grain, volume shadows, rim, state light.
  * Content placed in the element draws above all of it. Each layer obeys [LocalGlassLayers].
  */
 @Composable
@@ -60,6 +129,25 @@ fun Modifier.seaGlass(
     role: TonalTones = LocalGlassRole.current,
     tinted: Boolean = false,
     adaptive: Boolean = false,
+    enabled: Boolean = true,
+    interactionSource: InteractionSource? = null,
+): Modifier {
+    val interaction = rememberGlassInteraction(finish, enabled, interactionSource)
+    val dark = LocalSeaGlassDark.current
+    val content = if (interaction.disabled) disabledContentColor(dark) else glassContentColor(interaction.finish, role, dark)
+    return seaGlass(interaction, shape, role, tinted, adaptive, content, Stages.All)
+}
+
+@Composable
+internal fun Modifier.seaGlass(
+    interaction: GlassInteraction,
+    shape: SeaGlassShape,
+    role: TonalTones,
+    tinted: Boolean,
+    adaptive: Boolean,
+    contentColor: Color,
+    stages: Stages,
+    bodyTransform: Modifier = Modifier,
 ): Modifier {
     val dark = LocalSeaGlassDark.current
     val contrast = LocalGlassContrast.current
@@ -70,17 +158,36 @@ fun Modifier.seaGlass(
     val motion = LocalMotionEnabled.current
     val grain = rememberGrainBrush()
 
+    val finish = interaction.finish
     val context = remember(dark, contrast, reduceTransparency, role, adaptive, tinted) {
         GlassContext(dark, contrast, reduceTransparency, role, adaptive, tinted)
     }
     val body = remember(finish, context) { GlassRecipes.body(finish, context) }
     val hazeStyle = remember(body) { (body as? Body.Backdrop)?.toHazeStyle() }
 
-    return this
-        .glassBehind(finish, context, shape, layers)
-        .clip(shape)
-        .glassBody(body, hazeStyle, hazeState, layers.body)
-        .glassInner(finish, context, shape, layers, clock, motion, grain)
+    var chain: Modifier = this
+    if (stages == Stages.All || stages == Stages.Frame) {
+        chain = chain
+            .glassTransform(interaction)
+            .glassHalo(context, shape, interaction)
+            .glassBehind(finish, context, shape, layers, interaction)
+    }
+    if (stages == Stages.All || stages == Stages.Body) {
+        chain = chain.clip(shape).then(bodyTransform).glassBody(body, hazeStyle, hazeState, layers.body)
+    }
+    if (stages == Stages.All || stages == Stages.Inner) {
+        chain = chain.clip(shape).glassInner(finish, context, shape, layers, clock, motion, grain, interaction, contentColor)
+    }
+    return chain
+}
+
+private fun Modifier.glassTransform(interaction: GlassInteraction): Modifier = graphicsLayer {
+    val scale = 1f + (SeaGlassTokens.State.Press.Scale - 1f) * interaction.press.value
+    scaleX = scale
+    scaleY = scale
+    if (interaction.finish.isRaised) {
+        translationY = -SeaGlassTokens.State.Hover.Lift.toPx() * interaction.hover.value
+    }
 }
 
 private fun Body.Backdrop.toHazeStyle(): HazeBlurStyle {
@@ -107,14 +214,19 @@ private fun saturationBrightness(s: Float, b: Float) = ColorMatrix(
     ),
 )
 
-private fun Modifier.glassBody(
+internal fun Modifier.glassBody(
     body: Body,
     hazeStyle: HazeBlurStyle?,
-    hazeState: dev.chrisbanes.haze.HazeState?,
+    hazeState: HazeState?,
     enabled: Boolean,
 ): Modifier = when {
     !enabled -> this
+    body is Body.None -> this
     body is Body.Solid -> background(body.color)
+    body is Body.Radial -> drawWithCache {
+        val layer = radialLayer(body.cx, body.cy, body.rx, body.ry, body.stops, size.width, size.height)
+        onDrawBehind { drawRadial(layer) }
+    }
     body is Body.Backdrop && hazeState != null && hazeStyle != null ->
         hazeBlur(input = HazeInput.Sources(hazeState), style = hazeStyle)
     body is Body.Backdrop -> drawWithCache {
@@ -123,16 +235,69 @@ private fun Modifier.glassBody(
     else -> this
 }
 
+private class HaloShadow(val blur: Float, val spread: Float, val color: Color)
+
+/** Focus halo from `halo()` in recipes.js, listed top-most first. */
+private fun haloShadows(c: GlassContext): List<HaloShadow> {
+    val p = c.role
+    return when {
+        c.level == 2 -> listOf(
+            HaloShadow(0f, 3f, if (c.dark) p[90] else p[30]),
+            HaloShadow(0f, 5f, if (c.dark) Color.Black else Color.White),
+            HaloShadow(18f, 4f, p[60].alpha(0.45f)),
+        )
+        c.dark -> listOf(
+            HaloShadow(0f, 1.5f, p[80].alpha(0.95f)),
+            HaloShadow(14f, 3f, p[60].alpha(0.6f)),
+            HaloShadow(34f, 10f, p[60].alpha(0.25f)),
+        )
+        else -> listOf(
+            HaloShadow(0f, 1.5f, p[60].alpha(0.85f)),
+            HaloShadow(14f, 3f, p[60].alpha(0.42f)),
+            HaloShadow(34f, 10f, p[70].alpha(0.22f)),
+        )
+    }
+}
+
+private fun Modifier.glassHalo(context: GlassContext, shape: SeaGlassShape, interaction: GlassInteraction): Modifier =
+    drawWithCache {
+        val density = this.density
+        val path = Path().apply { addRoundRect(shape.roundRect(size, density)) }
+        val layer = obtainGraphicsLayer()
+        var recorded = false
+        onDrawBehind {
+            val focus = interaction.focus.value
+            if (focus <= 0f) return@onDrawBehind
+            if (!recorded) {
+                val painters = haloShadows(context).asReversed().map {
+                    DropShadowPainter(
+                        shape,
+                        Shadow(radius = shadowRadiusDp(it.blur / 2f, density).dp, color = it.color, spread = it.spread.dp),
+                    )
+                }
+                layer.record(this, layoutDirection, IntSize(size.width.roundToInt(), size.height.roundToInt())) {
+                    for (painter in painters) with(painter) { draw(size) }
+                }
+                recorded = true
+            }
+            layer.alpha = focus
+            clipPath(path, ClipOp.Difference) { drawLayer(layer) }
+        }
+    }
+
 private fun Modifier.glassBehind(
     finish: GlassFinish,
     context: GlassContext,
     shape: SeaGlassShape,
     layers: GlassLayers,
+    interaction: GlassInteraction,
 ): Modifier = drawWithCache {
     val density = this.density
     val w = size.width / density
     val h = size.height / density
     val spec = GlassRecipes.layers(finish, context, w, h)
+    val intSize = IntSize(size.width.roundToInt(), size.height.roundToInt())
+    val raised = finish.isRaised
 
     val shadowPainter = spec.shadow.takeIf { layers.shadow }?.let {
         val spread = -((1f - it.scaleX) * w + (1f - it.scaleY) * h) / 4f
@@ -149,13 +314,31 @@ private fun Modifier.glassBehind(
     val caustic = spec.caustic.takeIf { layers.caustic }?.let { ovalPaint(it, w, h, density) }
     val contact = spec.contact.takeIf { layers.contact }?.let { ovalPaint(it, w, h, density) }
 
-    val layer = obtainGraphicsLayer()
-    layer.record(this, layoutDirection, IntSize(size.width.roundToInt(), size.height.roundToInt())) {
+    val shadowLayer = obtainGraphicsLayer()
+    shadowLayer.record(this, layoutDirection, intSize) {
         shadowPainter?.let { with(it) { draw(size) } }
+    }
+    val ovalLayer = obtainGraphicsLayer()
+    ovalLayer.record(this, layoutDirection, intSize) {
         caustic?.let { drawOval(it) }
         contact?.let { drawOval(it) }
     }
-    onDrawBehind { drawLayer(layer) }
+
+    onDrawBehind {
+        if (raised) {
+            val hover = interaction.hover.value
+            val press = interaction.press.value
+            val dy = SeaGlassTokens.State.Hover.ShadowDrop.toPx() * hover - SeaGlassTokens.State.Press.ShadowRise.toPx() * press
+            val scale = 1f + (SeaGlassTokens.State.Hover.ShadowScale - 1f) * hover - (1f - SeaGlassTokens.State.Press.ShadowScale) * press
+            withTransform({
+                translate(0f, dy)
+                scale(scale, scale, pivot = Offset(size.width / 2f, size.height / 2f))
+            }) { drawLayer(shadowLayer) }
+        } else {
+            drawLayer(shadowLayer)
+        }
+        drawLayer(ovalLayer)
+    }
 }
 
 /**
@@ -205,29 +388,25 @@ private fun Modifier.glassInner(
     clock: GlassClock,
     motion: Boolean,
     grain: ShaderBrush,
+    interaction: GlassInteraction,
+    contentColor: Color,
 ): Modifier = drawWithCache {
     val density = this.density
     val w = size.width / density
     val h = size.height / density
     val spec = GlassRecipes.layers(finish, context, w, h)
+    val raised = finish.isRaised
+    val dark = context.dark
 
     val lights = if (layers.light) {
-        spec.light.map { radial ->
-            val rx = radial.rx * size.width
-            LightLayer(
-                center = Offset(radial.cx * size.width, radial.cy * size.height),
-                radius = rx,
-                squash = (radial.ry * size.height) / rx,
-                brush = Brush.radialGradient(
-                    colorStops = arrayOf(0f to radial.color, radial.endStop to radial.color.transparent),
-                    center = Offset.Zero,
-                    radius = rx,
-                ),
-            )
-        }
+        spec.light.map { radialLayer(it.cx, it.cy, it.rx, it.ry, listOf(0f to it.color, it.endStop to it.color.transparent), size.width, size.height) }
     } else {
         emptyList()
     }
+
+    val hoverLight = radialLayer(0.5f, 0f, 0.9f, 0.8f, listOf(0f to white(if (dark) 0.14f else 0.32f), 1f to white(0f)), size.width, size.height)
+    val focusLight = radialLayer(0.5f, 0f, 0.9f, 0.8f, listOf(0f to white(if (dark) 0.12f else 0.26f), 1f to white(0f)), size.width, size.height)
+    val pressBloom = radialLayer(0.5f, 0.55f, 0.75f, 0.95f, listOf(0f to white(if (dark) 0.22f else 0.42f), 1f to white(0f)), size.width, size.height)
 
     val insets = if (layers.volume) {
         spec.insets.asReversed().map {
@@ -249,7 +428,6 @@ private fun Modifier.glassInner(
     val rimBrush = rim?.let { rimBrush(it, size.width, size.height) }
     val rimOutline = rim?.let { Outline.Rounded(shape.roundRect(size, density).inset(0.75f * density)) }
     val rimStroke = Stroke(width = SeaGlassTokens.Rim.Width.toPx())
-
     val grainAlpha = if (layers.grain) spec.grain else 0f
 
     val staticLayer = obtainGraphicsLayer()
@@ -263,22 +441,49 @@ private fun Modifier.glassInner(
         if (lights.isNotEmpty()) {
             val t = if (motion) clock.seconds else 0f
             val (dx, dy) = driftOffset(driftProgress(t, spec.driftOffsetSeconds), size.width, size.height)
-            withTransform({ translate(dx, dy) }) {
-                for (light in lights) {
-                    withTransform({
-                        translate(light.center.x, light.center.y)
-                        scale(1f, light.squash, pivot = Offset.Zero)
-                    }) {
-                        drawCircle(light.brush, radius = light.radius, center = Offset.Zero)
-                    }
-                }
-            }
+            withTransform({ translate(dx, dy) }) { lights.forEach { drawRadial(it) } }
         }
         drawLayer(staticLayer)
+
+        val hover = interaction.hover.value
+        val press = interaction.press.value
+        val focus = interaction.focus.value
+        if (raised) {
+            if (hover > 0f) drawRadial(hoverLight, hover)
+            if (focus > 0f) drawRadial(focusLight, focus)
+            if (press > 0f) drawRadial(pressBloom, press)
+        } else {
+            if (hover > 0f) drawRect(contentColor, alpha = SeaGlassTokens.State.Hover.SurfaceAlpha * hover)
+            if (press > 0f) drawRect(contentColor, alpha = SeaGlassTokens.State.Press.SurfaceAlpha * press)
+        }
     }
 }
 
-private class LightLayer(val center: Offset, val radius: Float, val squash: Float, val brush: Brush)
+/** Elliptical radial gradient resolved to px: drawn with its centre at [center], squashed to [squash]. */
+internal class RadialLayer(val center: Offset, val radius: Float, val squash: Float, val brush: Brush)
+
+internal fun radialLayer(
+    cx: Float, cy: Float, rx: Float, ry: Float,
+    stops: List<Pair<Float, Color>>,
+    width: Float, height: Float,
+): RadialLayer {
+    val radius = rx * width
+    return RadialLayer(
+        center = Offset(cx * width, cy * height),
+        radius = radius,
+        squash = (ry * height) / radius,
+        brush = Brush.radialGradient(colorStops = stops.toTypedArray(), center = Offset.Zero, radius = radius),
+    )
+}
+
+internal fun DrawScope.drawRadial(layer: RadialLayer, alpha: Float = 1f) {
+    withTransform({
+        translate(layer.center.x, layer.center.y)
+        scale(1f, layer.squash, pivot = Offset.Zero)
+    }) {
+        drawCircle(layer.brush, radius = layer.radius, center = Offset.Zero, alpha = alpha)
+    }
+}
 
 private fun rimBrush(rim: RimSpec, width: Float, height: Float): Brush {
     val stops = rim.stops.toTypedArray()
