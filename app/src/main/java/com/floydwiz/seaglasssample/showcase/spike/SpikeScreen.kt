@@ -307,13 +307,13 @@ private fun BoxScope.StatsPanel(
     ) {
         val mono = androidx.compose.ui.text.TextStyle(fontSize = 10.5.sp, color = Color.White, lineHeight = 13.sp)
         Text(
-            "%.0f Hz · p50 %.1f · p95 %.1f · p99 %.1f ms · jank %.0f%% · gpu p95 %.1f".format(
-                refreshRate, live.p50Ms, live.p95Ms, live.p99Ms, live.jankPercent, live.gpuP95Ms,
+            "%.0f Hz · total p50 %.1f · p95 %.1f · p99 %.1f ms · ui p95 %.1f · missed %.0f%%".format(
+                refreshRate, live.totalP50Ms, live.totalP95Ms, live.totalP99Ms, live.uiP95Ms, live.missedPercent,
             ),
             style = mono,
         )
         if (running != null) Text("sweep: $running", style = mono)
-        results.forEach { Text("${it.name}: p50 %.1f p95 %.1f jank %.0f%% gpu %.1f".format(it.summary.p50Ms, it.summary.p95Ms, it.summary.jankPercent, it.summary.gpuP95Ms), style = mono) }
+        results.forEach { Text("${it.name}: p50 %.1f p95 %.1f ui %.1f miss %.0f%%".format(it.summary.totalP50Ms, it.summary.totalP95Ms, it.summary.uiP95Ms, it.summary.missedPercent), style = mono) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = onToggleScroll, modifier = Modifier.height(32.dp), contentPadding = PaddingValues(horizontal = 12.dp)) {
                 Text(if (autoScroll) "Stop scroll" else "Auto-scroll", fontSize = 11.sp)
@@ -338,12 +338,13 @@ private fun writeResults(dir: File, refreshRate: Float, results: List<SweepResul
                     JSONObject().apply {
                         put("config", it.name)
                         put("frames", it.summary.frames)
-                        put("p50Ms", it.summary.p50Ms.toDouble())
-                        put("p95Ms", it.summary.p95Ms.toDouble())
-                        put("p99Ms", it.summary.p99Ms.toDouble())
-                        put("maxMs", it.summary.maxMs.toDouble())
+                        put("totalP50Ms", it.summary.totalP50Ms.toDouble())
+                        put("totalP95Ms", it.summary.totalP95Ms.toDouble())
+                        put("totalP99Ms", it.summary.totalP99Ms.toDouble())
+                        put("totalMaxMs", it.summary.totalMaxMs.toDouble())
+                        put("uiP95Ms", it.summary.uiP95Ms.toDouble())
+                        put("missedPercent", it.summary.missedPercent.toDouble())
                         put("jankPercent", it.summary.jankPercent.toDouble())
-                        put("gpuP95Ms", it.summary.gpuP95Ms.toDouble())
                     }
                 },
             ),

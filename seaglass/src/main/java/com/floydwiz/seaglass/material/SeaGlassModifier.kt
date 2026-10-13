@@ -139,7 +139,7 @@ private fun Modifier.glassBehind(
         DropShadowPainter(
             shape,
             Shadow(
-                radius = (it.blur * 2f).dp,
+                radius = shadowRadiusDp(sigmaDp = it.blur, density = density).dp,
                 color = it.color,
                 spread = spread.dp,
                 offset = DpOffset(0.dp, it.offsetY.dp),
@@ -157,6 +157,13 @@ private fun Modifier.glassBehind(
     }
     onDrawBehind { drawLayer(layer) }
 }
+
+/**
+ * Compose passes `Shadow.radius` straight to `BlurMaskFilter`, whose sigma is 0.57735 * radius + 0.5 px.
+ * Returns the radius that gives [sigmaDp]; a CSS `filter: blur(R)` has sigma R, a box-shadow blur B has sigma B / 2.
+ */
+private fun shadowRadiusDp(sigmaDp: Float, density: Float): Float =
+    if (sigmaDp <= 0f) 0f else ((sigmaDp * density - 0.5f) / 0.57735f).coerceAtLeast(0f) / density
 
 private class OvalPaint(val paint: Paint, val rect: RectF)
 
@@ -227,7 +234,7 @@ private fun Modifier.glassInner(
             InnerShadowPainter(
                 shape,
                 Shadow(
-                    radius = it.blur.dp,
+                    radius = shadowRadiusDp(sigmaDp = it.blur / 2f, density = density).dp,
                     color = it.color,
                     spread = it.spread.dp,
                     offset = DpOffset(it.x.dp, it.y.dp),

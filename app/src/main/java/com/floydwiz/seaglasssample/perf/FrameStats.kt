@@ -1,63 +1,74 @@
 package com.floydwiz.seaglasssample.perf
 
 import android.app.Activity
-import android.os.Handler
-import android.os.Looper
-import android.view.FrameMetrics
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.metrics.performance.FrameData
+import androidx.metrics.performance.FrameDataApi31
 import androidx.metrics.performance.JankStats
 
 class FrameSummary(
     val frames: Int,
-    val p50Ms: Float,
-    val p95Ms: Float,
-    val p99Ms: Float,
-    val maxMs: Float,
+    val totalP50Ms: Float,
+    val totalP95Ms: Float,
+    val totalP99Ms: Float,
+    val totalMaxMs: Float,
+    val uiP95Ms: Float,
+    val missedPercent: Float,
     val jankPercent: Float,
-    val gpuP95Ms: Float,
 ) {
     override fun toString() =
-        "frames=$frames p50=%.1f p95=%.1f p99=%.1f max=%.1f jank=%.1f%% gpuP95=%.1f".format(p50Ms, p95Ms, p99Ms, maxMs, jankPercent, gpuP95Ms)
+        "frames=$frames total(p50=%.1f p95=%.1f p99=%.1f max=%.1f) uiP95=%.1f missed=%.1f%% jank=%.1f%%"
+            .format(totalP50Ms, totalP95Ms, totalP99Ms, totalMaxMs, uiP95Ms, missedPercent, jankPercent)
 }
 
-/** Collects UI frame durations and jank flags from JankStats, and GPU durations from FrameMetrics. */
+/**
+ * Collects per-frame metrics from JankStats (API 31+ [FrameDataApi31]).
+ * - total: vsync to frame completion, which includes RenderThread and GPU work; this is the gate metric.
+ * - ui: UI-thread work only (input, composition, layout, draw recording).
+ * - missed: frames whose overrun past the deadline is positive.
+ */
 class FrameStats {
     private val lock = Any()
+    private val totalNanos = ArrayList<Long>()
     private val uiNanos = ArrayList<Long>()
-    private val jankFlags = ArrayList<Boolean>()
-    private val gpuNanos = ArrayList<Long>()
+    private val missed = ArrayList<Boolean>()
+    private val jank = ArrayList<Boolean>()
 
     fun reset() = synchronized(lock) {
+        totalNanos.clear()
         uiNanos.clear()
-        jankFlags.clear()
-        gpuNanos.clear()
+        missed.clear()
+        jank.clear()
     }
 
-    internal fun onUiFrame(durationNanos: Long, jank: Boolean) = synchronized(lock) {
-        uiNanos.add(durationNanos)
-        jankFlags.add(jank)
+    internal fun onFrame(frame: FrameData) = synchronized(lock) {
+        val api31 = frame as FrameDataApi31
+        totalNanos.add(api31.frameDurationTotalNanos)
+        uiNanos.add(frame.frameDurationUiNanos)
+        missed.add(api31.frameOverrunNanos > 0)
+        jank.add(frame.isJank)
     }
-
-    internal fun onGpuFrame(durationNanos: Long) = synchronized(lock) { gpuNanos.add(durationNanos) }
 
     /** Summary of the most recent [lastFrames] frames, or all frames since [reset]. */
     fun summary(lastFrames: Int = Int.MAX_VALUE): FrameSummary = synchronized(lock) {
+        val total = totalNanos.takeLast(lastFrames)
         val ui = uiNanos.takeLast(lastFrames)
-        val jank = jankFlags.takeLast(lastFrames)
-        val gpu = gpuNanos.takeLast(lastFrames)
         FrameSummary(
-            frames = ui.size,
-            p50Ms = percentile(ui, 0.50),
-            p95Ms = percentile(ui, 0.95),
-            p99Ms = percentile(ui, 0.99),
-            maxMs = ui.maxOrNull()?.let { it / 1e6f } ?: 0f,
-            jankPercent = if (jank.isEmpty()) 0f else 100f * jank.count { it } / jank.size,
-            gpuP95Ms = percentile(gpu, 0.95),
+            frames = total.size,
+            totalP50Ms = percentile(total, 0.50),
+            totalP95Ms = percentile(total, 0.95),
+            totalP99Ms = percentile(total, 0.99),
+            totalMaxMs = total.maxOrNull()?.let { it / 1e6f } ?: 0f,
+            uiP95Ms = percentile(ui, 0.95),
+            missedPercent = share(missed.takeLast(lastFrames)),
+            jankPercent = share(jank.takeLast(lastFrames)),
         )
     }
+
+    private fun share(flags: List<Boolean>) = if (flags.isEmpty()) 0f else 100f * flags.count { it } / flags.size
 
     private fun percentile(values: List<Long>, p: Double): Float {
         if (values.isEmpty()) return 0f
@@ -75,17 +86,9 @@ fun rememberFrameStats(): FrameStats {
         if (window == null) {
             onDispose { }
         } else {
-            val jankStats = JankStats.createAndTrack(window) { frame -> stats.onUiFrame(frame.frameDurationUiNanos, frame.isJank) }
-            val gpuListener = frameMetricsListener { metrics -> stats.onGpuFrame(metrics.getMetric(FrameMetrics.GPU_DURATION)) }
-            window.addOnFrameMetricsAvailableListener(gpuListener, Handler(Looper.getMainLooper()))
-            onDispose {
-                jankStats.isTrackingEnabled = false
-                window.removeOnFrameMetricsAvailableListener(gpuListener)
-            }
+            val jankStats = JankStats.createAndTrack(window) { frame -> stats.onFrame(frame) }
+            onDispose { jankStats.isTrackingEnabled = false }
         }
     }
     return stats
 }
-
-private fun frameMetricsListener(block: (FrameMetrics) -> Unit) =
-    android.view.Window.OnFrameMetricsAvailableListener { _, metrics, _ -> block(metrics) }
