@@ -103,7 +103,7 @@ fun GlassSwitch(
                 modifier = Modifier
                     .offset(knobX, 3.dp)
                     .size(KnobSize)
-                    .graphicsLayer { alpha = 1f - pressAmount },
+                    .graphicsLayer { alpha = 1f - pressAmount.coerceIn(0f, 1f) },
                 shape = SeaGlassShape.Round,
                 role = role,
                 enabled = enabled,
@@ -118,7 +118,7 @@ fun GlassSwitch(
                         modifier = Modifier
                             .offset(lensX, (-2).dp)
                             .size(44.dp, 38.dp)
-                            .graphicsLayer { alpha = pressAmount },
+                            .graphicsLayer { alpha = pressAmount.coerceIn(0f, 1f) },
                         shape = SeaGlassShape.Pane(19.dp),
                         role = role,
                         reactsTo = emptySet(),

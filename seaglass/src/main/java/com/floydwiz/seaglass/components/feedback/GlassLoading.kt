@@ -8,7 +8,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -34,7 +33,7 @@ private val Silhouettes = listOf(SeaGlassShape.Lens, SeaGlassShape.Shard, SeaGla
 /**
  * Loading indicator: a glass pebble tumbling through lens, shard, egg and tumble silhouettes on a 2.4 s alternate loop.
  * - [contained] places a smaller pebble inside a 72 dp clear lens for busy surfaces.
- * - Reduced motion holds the lens shape and pulses opacity instead.
+ * - With animations off the pebble holds the lens shape.
  */
 @Composable
 fun GlassLoadingIndicator(
@@ -47,11 +46,16 @@ fun GlassLoadingIndicator(
     val transition = rememberInfiniteTransition(label = "loading")
     val morph by transition.animateFloat(
         initialValue = 0f, targetValue = 3f,
-        animationSpec = infiniteRepeatable(tween(2400, easing = MorphEasing), RepeatMode.Reverse), label = "morph",
-    )
-    val pulse by transition.animateFloat(
-        initialValue = 0.55f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse), label = "pulse",
+        animationSpec = infiniteRepeatable(
+            keyframes {
+                durationMillis = 2400
+                0f at 0 using MorphEasing
+                1f at 792 using MorphEasing
+                2f at 1584 using MorphEasing
+            },
+            RepeatMode.Reverse,
+        ),
+        label = "morph",
     )
     val shape = if (motion) {
         val index = floor(morph).toInt().coerceIn(0, 2)
@@ -66,7 +70,7 @@ fun GlassLoadingIndicator(
         }
         GlassSurface(
             finish = GlassFinish.Glass,
-            modifier = Modifier.size(pebbleSize).graphicsLayer { alpha = if (motion) 1f else pulse },
+            modifier = Modifier.size(pebbleSize),
             shape = shape,
             role = role,
             reactsTo = emptySet(),

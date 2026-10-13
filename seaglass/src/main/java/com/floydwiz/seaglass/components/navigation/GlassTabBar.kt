@@ -1,11 +1,6 @@
 package com.floydwiz.seaglass.components.navigation
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.hoverable
@@ -23,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,19 +27,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.components.selection.trackAxisDrag
@@ -52,6 +51,7 @@ import com.floydwiz.seaglass.material.GlassState
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalForcedGlassState
 import com.floydwiz.seaglass.material.SeaGlassTokens
+import com.floydwiz.seaglass.material.StretchLens
 import com.floydwiz.seaglass.material.glassAccent
 import com.floydwiz.seaglass.material.glassOnRole
 import com.floydwiz.seaglass.shape.SeaGlassShape
@@ -80,6 +80,8 @@ class TabBarState {
 fun rememberTabBarState() = remember { TabBarState() }
 
 private val TabWidth = 76.dp
+private const val FullId = "tabBarFull"
+private const val MinimizedId = "tabBarMinimized"
 private val BarHeight = 62.dp
 
 /**
@@ -100,16 +102,42 @@ fun GlassTabBar(
     previewStates: Map<Int, GlassState> = emptyMap(),
     role: TonalTones = LocalGlassRole.current,
 ) {
-    AnimatedContent(
-        targetState = minimized,
+    val geometry by animateFloatAsState(if (minimized) 1f else 0f, SeaGlassTokens.Motion.spatialDefault(), label = "tabBarMinimize")
+    val fade by animateFloatAsState(if (minimized) 1f else 0f, SeaGlassTokens.Motion.effectsDefault(), label = "tabBarFade")
+    val showFull by remember { derivedStateOf { fade < 0.99f } }
+    val showMinimized by remember { derivedStateOf { fade > 0.01f } }
+    Layout(
+        content = {
+            if (showFull) {
+                Box(
+                    Modifier.layoutId(FullId).graphicsLayer {
+                        alpha = 1f - fade.coerceIn(0f, 1f)
+                        scaleX = lerp(1f, 0.3f, geometry)
+                        transformOrigin = TransformOrigin(0f, 0.5f)
+                    },
+                ) { FullBar(tabs, selectedIndex, onSelect, onSearch, previewStates, role) }
+            }
+            if (showMinimized) {
+                Box(
+                    Modifier.layoutId(MinimizedId).graphicsLayer {
+                        alpha = fade.coerceIn(0f, 1f)
+                        scaleX = lerp(0.6f, 1f, geometry)
+                        transformOrigin = TransformOrigin(0f, 0.5f)
+                    },
+                ) { MinimizedBar(tabs, selectedIndex, accessory, onSearch, onExpand, role) }
+            }
+        },
         modifier = modifier,
-        transitionSpec = { fadeIn(SeaGlassTokens.Motion.effectsDefault()) togetherWith fadeOut(SeaGlassTokens.Motion.effectsDefault()) },
-        label = "tabBarMinimize",
-    ) { isMinimized ->
-        if (isMinimized) {
-            MinimizedBar(tabs, selectedIndex, accessory, onSearch, onExpand, role)
-        } else {
-            FullBar(tabs, selectedIndex, onSelect, onSearch, previewStates, role)
+    ) { measurables, constraints ->
+        val full = measurables.firstOrNull { it.layoutId == FullId }?.measure(constraints.copy(minWidth = 0, minHeight = 0))
+        val minimizedBar = measurables.firstOrNull { it.layoutId == MinimizedId }?.measure(constraints.copy(minWidth = 0, minHeight = 0))
+        val from = full ?: minimizedBar!!
+        val to = minimizedBar ?: full!!
+        val width = lerp(from.width.toFloat(), to.width.toFloat(), if (full != null && minimizedBar != null) geometry else 0f).roundToInt()
+        val height = lerp(from.height.toFloat(), to.height.toFloat(), if (full != null && minimizedBar != null) geometry else 0f).roundToInt()
+        layout(width, height) {
+            full?.place(0, (height - full.height) / 2)
+            minimizedBar?.place(0, (height - minimizedBar.height) / 2)
         }
     }
 }
@@ -122,14 +150,19 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
     val count = tabs.size
     val scope = rememberCoroutineScope()
     val forcedPress = LocalForcedGlassState.current == GlassState.Press
-    val lensLeft = remember { Animatable(insetPx + selectedIndex * tabPx) }
+    val lens = remember { StretchLens(insetPx + selectedIndex * tabPx, tabPx) }
     var interacting by remember { mutableStateOf(false) }
     LaunchedEffect(selectedIndex, tabPx, interacting) {
-        if (!interacting) lensLeft.animateTo(insetPx + selectedIndex * tabPx, SeaGlassTokens.Motion.spatialDefault())
+        if (!interacting) lens.settle(insetPx + selectedIndex * tabPx, tabPx)
     }
     val pressing = interacting || forcedPress
     val pressAmount by animateFloatAsState(if (pressing) 1f else 0f, SeaGlassTokens.Motion.spatialFast(), label = "tabLens")
-    val hot = ((lensLeft.value - insetPx) / tabPx).roundToInt().coerceIn(0, count - 1)
+    val hot by remember(count, tabPx) {
+        derivedStateOf { ((lens.centre() - tabPx / 2f - insetPx) / tabPx).roundToInt().coerceIn(0, count - 1) }
+    }
+    val showLens by remember { derivedStateOf { pressAmount > 0.01f } }
+    val barPx = (TabWidth * count + 8.dp).value * density
+    val bulgePx = 6f * density
     val dark = LocalSeaGlassDark.current
     val ink = if (dark) Content.OnSurfaceDark else Content.OnSurfaceLight
 
@@ -147,8 +180,8 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
                         var lastX = down.position.x
                         trackAxisDrag(
                             down, horizontal = true,
-                            onPress = { interacting = true; scope.launch { lensLeft.snapTo(target(it.x)) } },
-                            onMove = { lastX = it.x; scope.launch { lensLeft.snapTo(target(it.x)) } },
+                            onPress = { interacting = true; scope.launch { lens.drag(target(it.x), tabPx) } },
+                            onMove = { lastX = it.x; scope.launch { lens.drag(target(it.x), tabPx) } },
                             onTap = { interacting = false; onSelect(indexAt(it.x)) },
                             onCancel = { interacting = false },
                             onEnd = { interacting = false; onSelect(indexAt(lastX)) },
@@ -161,20 +194,32 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
                 GlassSurface(
                     finish = GlassFinish.Frost,
                     modifier = Modifier
-                        .offset { IntOffset(lensLeft.value.roundToInt(), 4.dp.roundToPx()) }
+                        .offset(y = 4.dp)
                         .size(TabWidth, BarHeight - 8.dp)
-                        .graphicsLayer { alpha = 1f - pressAmount },
+                        .graphicsLayer {
+                            val left = lens.leftEdge(-bulgePx)
+                            translationX = left
+                            scaleX = (lens.rightEdge(barPx + bulgePx) - left) / tabPx
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                            alpha = 1f - pressAmount.coerceIn(0f, 1f)
+                        },
                     shape = SeaGlassShape.Pane((BarHeight - 8.dp) / 2),
                     role = role,
                     reactsTo = emptySet(),
                 )
-                if (pressAmount > 0.01f) {
+                if (showLens) {
                     GlassSurface(
                         finish = GlassFinish.Lens,
                         modifier = Modifier
-                            .offset { IntOffset((lensLeft.value - 12.dp.toPx()).roundToInt(), (-6).dp.roundToPx()) }
+                            .offset(y = (-6).dp)
                             .size(100.dp, 74.dp)
-                            .graphicsLayer { alpha = pressAmount },
+                            .graphicsLayer {
+                                val left = lens.leftEdge(-bulgePx) - 12.dp.toPx()
+                                translationX = left
+                                scaleX = (lens.rightEdge(barPx + bulgePx) + 12.dp.toPx() - left) / (tabPx + 24.dp.toPx())
+                                transformOrigin = TransformOrigin(0f, 0.5f)
+                                alpha = pressAmount.coerceIn(0f, 1f)
+                            },
                         shape = SeaGlassShape.Pane(37.dp),
                         role = role,
                         reactsTo = emptySet(),

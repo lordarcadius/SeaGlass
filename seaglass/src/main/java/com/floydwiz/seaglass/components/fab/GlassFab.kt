@@ -39,6 +39,7 @@ import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalHazeState
 import com.floydwiz.seaglass.material.LocalMotionEnabled
+import com.floydwiz.seaglass.material.LocalMotionScale
 import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.rgba
 import com.floydwiz.seaglass.shape.SeaGlassShape
@@ -126,14 +127,16 @@ fun GlassFabMenu(
 ) {
     val dark = LocalSeaGlassDark.current
     val motion = LocalMotionEnabled.current
+    val motionScale = LocalMotionScale.current
     val scope = rememberCoroutineScope()
     val melt by animateFloatAsState(if (expanded) 1f else 0f, SeaGlassTokens.Motion.spatialFast(), label = "fabMelt")
+    val meltShape = melt.coerceIn(0f, 1f)
     val rise = remember(items.size) { List(items.size) { Animatable(0f) } }
-    LaunchedEffect(expanded, items.size, motion) {
+    LaunchedEffect(expanded, items.size, motion, motionScale) {
         rise.forEachIndexed { index, animatable ->
             scope.launch {
                 if (expanded) {
-                    if (motion) delay(index * 40L)
+                    if (motion) delay((index * 40L * motionScale).toLong())
                     animatable.animateTo(1f, SeaGlassTokens.Motion.spatialFast())
                 } else {
                     animatable.animateTo(0f, SeaGlassTokens.Motion.spatialFast())
@@ -156,7 +159,7 @@ fun GlassFabMenu(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .alpha(melt)
+                    .alpha(meltShape)
                     .then(if (hazeState != null) Modifier.hazeBlur(HazeInput.Sources(hazeState), veilStyle) else Modifier.background(tint))
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onExpandedChange(false) },
             )
@@ -193,10 +196,10 @@ fun GlassFabMenu(
             }
         }
         val closedWidth = if (label != null) 136.dp else 56.dp
-        val shape = if (melt < 0.5f) {
-            SeaGlassShape.lerp(if (label != null) SeaGlassShape.Capsule else SeaGlassShape.Pebble, SeaGlassShape.Egg, melt * 2f)
+        val shape = if (meltShape < 0.5f) {
+            SeaGlassShape.lerp(if (label != null) SeaGlassShape.Capsule else SeaGlassShape.Pebble, SeaGlassShape.Egg, meltShape * 2f)
         } else {
-            SeaGlassShape.lerp(SeaGlassShape.Egg, SeaGlassShape.Lens, (melt - 0.5f) * 2f)
+            SeaGlassShape.lerp(SeaGlassShape.Egg, SeaGlassShape.Lens, (meltShape - 0.5f) * 2f)
         }
         GlassSurface(
             finish = GlassFinish.Glass,

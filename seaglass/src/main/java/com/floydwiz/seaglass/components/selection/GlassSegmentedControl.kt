@@ -1,8 +1,8 @@
 package com.floydwiz.seaglass.components.selection
 
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -38,7 +38,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.TonalTones
@@ -48,6 +48,7 @@ import com.floydwiz.seaglass.material.GlassState
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalForcedGlassState
 import com.floydwiz.seaglass.material.SeaGlassTokens
+import com.floydwiz.seaglass.material.StretchLens
 import com.floydwiz.seaglass.material.disabledContentColor
 import com.floydwiz.seaglass.material.glassOnRole
 import com.floydwiz.seaglass.material.glassOnSurfaceVariant
@@ -84,15 +85,20 @@ fun GlassSegmentedControl(
     val count = options.size
     val scope = rememberCoroutineScope()
     val forcedPress = LocalForcedGlassState.current == GlassState.Press
-    val lensLeft = remember { Animatable(insetPx + selectedIndex * segmentPx) }
+    val lens = remember { StretchLens(insetPx + selectedIndex * segmentPx, segmentPx) }
     var interacting by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedIndex, segmentPx, interacting) {
-        if (!interacting) lensLeft.animateTo(insetPx + selectedIndex * segmentPx, SeaGlassTokens.Motion.spatialDefault())
+        if (!interacting) lens.settle(insetPx + selectedIndex * segmentPx, segmentPx)
     }
     val pressing = enabled && (interacting || forcedPress)
     val pressAmount by animateFloatAsState(if (pressing) 1f else 0f, SeaGlassTokens.Motion.spatialFast(), label = "segmentLens")
-    val hot = ((lensLeft.value - insetPx) / segmentPx).roundToInt().coerceIn(0, count - 1)
+    val hot by remember(count, segmentPx) {
+        derivedStateOf { ((lens.centre() - segmentPx / 2f - insetPx) / segmentPx).roundToInt().coerceIn(0, count - 1) }
+    }
+    val showLens by remember { derivedStateOf { pressAmount > 0.01f } }
+    val wellPx = (segmentWidth * count + 8.dp).value * density
+    val bulgePx = 3f * density
 
     val dark = LocalSeaGlassDark.current
     Box(
@@ -110,8 +116,8 @@ fun GlassSegmentedControl(
                     var lastX = down.position.x
                     trackAxisDrag(
                         down, horizontal = true,
-                        onPress = { interacting = true; scope.launch { lensLeft.snapTo(target(it.x)) } },
-                        onMove = { lastX = it.x; scope.launch { lensLeft.snapTo(target(it.x)) } },
+                        onPress = { interacting = true; scope.launch { lens.drag(target(it.x), segmentPx) } },
+                        onMove = { lastX = it.x; scope.launch { lens.drag(target(it.x), segmentPx) } },
                         onTap = { interacting = false; onSelect(indexAt(it.x)) },
                         onCancel = { interacting = false },
                         onEnd = { interacting = false; onSelect(indexAt(lastX)) },
@@ -141,21 +147,33 @@ fun GlassSegmentedControl(
             GlassSurface(
                 finish = GlassFinish.Frost,
                 modifier = Modifier
-                    .offset { IntOffset(lensLeft.value.roundToInt(), 4.dp.roundToPx()) }
+                    .offset(y = 4.dp)
                     .size(segmentWidth, 32.dp)
-                    .graphicsLayer { alpha = 1f - pressAmount },
+                    .graphicsLayer {
+                        val left = lens.leftEdge(-bulgePx)
+                        translationX = left
+                        scaleX = (lens.rightEdge(wellPx + bulgePx) - left) / segmentPx
+                        transformOrigin = TransformOrigin(0f, 0.5f)
+                        alpha = 1f - pressAmount.coerceIn(0f, 1f)
+                    },
                 shape = SeaGlassShape.Pane(16.dp),
                 role = role,
                 enabled = enabled,
                 reactsTo = emptySet(),
             )
-            if (pressAmount > 0.01f) {
+            if (showLens) {
                 GlassSurface(
                     finish = GlassFinish.Lens,
                     modifier = Modifier
-                        .offset { IntOffset((lensLeft.value - 7.dp.toPx()).roundToInt(), (-3).dp.roundToPx()) }
+                        .offset(y = (-3).dp)
                         .size(segmentWidth + 14.dp, 46.dp)
-                        .graphicsLayer { alpha = pressAmount },
+                        .graphicsLayer {
+                            val left = lens.leftEdge(-bulgePx) - 7.dp.toPx()
+                            translationX = left
+                            scaleX = (lens.rightEdge(wellPx + bulgePx) + 7.dp.toPx() - left) / (segmentPx + 14.dp.toPx())
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                            alpha = pressAmount.coerceIn(0f, 1f)
+                        },
                     shape = SeaGlassShape.Pane(23.dp),
                     role = role,
                     reactsTo = emptySet(),

@@ -73,7 +73,8 @@ val LocalForcedGlassState = compositionLocalOf<GlassState?> { null }
 /**
  * Resolved interaction state of one glass element.
  * - [finish] is the finish actually drawn: disabled becomes Dry, a pressed Plain becomes Clear.
- * - hover, press and focus are animated 0..1 fractions read only in draw/layer lambdas.
+ * - hover and press move the element and its shadow on spatial.fast; the light they add, and focus, fade on
+ *   effects.fast so they never overshoot. All are animated fractions read only in draw/layer lambdas.
  */
 @Stable
 class GlassInteraction internal constructor(
@@ -81,6 +82,8 @@ class GlassInteraction internal constructor(
     val disabled: Boolean,
     internal val hover: State<Float>,
     internal val press: State<Float>,
+    internal val hoverLight: State<Float>,
+    internal val pressLight: State<Float>,
     internal val focus: State<Float>,
     internal val pressScale: Float,
 ) {
@@ -119,11 +122,14 @@ fun rememberGlassInteraction(
     }
 
     val motion = LocalMotionEnabled.current
-    val spring = if (motion) SeaGlassTokens.Motion.SpatialFast else snap()
-    val hover = animateFloatAsState(if (hovered) 1f else 0f, spring, label = "glassHover")
-    val press = animateFloatAsState(if (pressed) 1f else 0f, spring, label = "glassPress")
-    val focus = animateFloatAsState(if (focused) 1f else 0f, spring, label = "glassFocus")
-    return remember(drawn, disabled, pressScale) { GlassInteraction(drawn, disabled, hover, press, focus, pressScale) }
+    val spatial = if (motion) SeaGlassTokens.Motion.SpatialFast else snap()
+    val effects = if (motion) SeaGlassTokens.Motion.EffectsFast else snap()
+    val hover = animateFloatAsState(if (hovered) 1f else 0f, spatial, label = "glassHover")
+    val press = animateFloatAsState(if (pressed) 1f else 0f, spatial, label = "glassPress")
+    val hoverLight = animateFloatAsState(if (hovered) 1f else 0f, effects, label = "glassHoverLight")
+    val pressLight = animateFloatAsState(if (pressed) 1f else 0f, effects, label = "glassPressLight")
+    val focus = animateFloatAsState(if (focused) 1f else 0f, effects, label = "glassFocus")
+    return remember(drawn, disabled, pressScale) { GlassInteraction(drawn, disabled, hover, press, hoverLight, pressLight, focus, pressScale) }
 }
 
 internal enum class Stages { All, Frame, Body, Inner }
@@ -454,8 +460,8 @@ private fun Modifier.glassInner(
         }
         drawLayer(staticLayer)
 
-        val hover = interaction.hover.value
-        val press = interaction.press.value
+        val hover = interaction.hoverLight.value
+        val press = interaction.pressLight.value
         val focus = interaction.focus.value
         if (raised) {
             if (hover > 0f) drawRadial(hoverLight, hover)

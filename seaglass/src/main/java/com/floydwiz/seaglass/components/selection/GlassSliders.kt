@@ -250,7 +250,7 @@ private fun RailSlider(
                     modifier = Modifier
                         .offset(thumbX(f) - ThumbWidth / 2, 0.dp)
                         .size(ThumbWidth, ThumbHeight)
-                        .graphicsLayer { alpha = if (isLensThumb) 1f - lensAmount else 1f },
+                        .graphicsLayer { alpha = if (isLensThumb) 1f - lensAmount.coerceIn(0f, 1f) else 1f },
                     shape = SeaGlassShape.Pane(11.dp),
                     role = role,
                     enabled = enabled,
@@ -266,7 +266,7 @@ private fun RailSlider(
                         modifier = Modifier
                             .offset(thumbX(f) - 27.dp, 0.dp)
                             .size(54.dp, 38.dp)
-                            .graphicsLayer { alpha = lensAmount },
+                            .graphicsLayer { alpha = lensAmount.coerceIn(0f, 1f) },
                         shape = SeaGlassShape.Pane(19.dp),
                         role = role,
                         reactsTo = emptySet(),
@@ -276,7 +276,7 @@ private fun RailSlider(
                         modifier = Modifier
                             .offset(thumbX(f) - 24.dp, (-45).dp)
                             .size(48.dp, 30.dp)
-                            .graphicsLayer { alpha = lensAmount },
+                            .graphicsLayer { alpha = lensAmount.coerceIn(0f, 1f) },
                         shape = SeaGlassShape.Pane(15.dp),
                         role = role,
                         reactsTo = emptySet(),

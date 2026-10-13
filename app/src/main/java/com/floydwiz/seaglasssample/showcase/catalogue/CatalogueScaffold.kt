@@ -60,9 +60,9 @@ val LocalCatalogueState = compositionLocalOf { GlassState.Rest }
 
 private val WideBreakpoint = 600.dp
 
-/** Scrolling catalogue page with the state picker pinned at the top of the content. */
+/** Scrolling catalogue page with the state picker pinned at the top of the content unless [statePicker] is false. */
 @Composable
-fun CatalogueScreen(contentPadding: PaddingValues, content: @Composable ColumnScope.() -> Unit) {
+fun CatalogueScreen(contentPadding: PaddingValues, statePicker: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
     var picked by rememberSaveable { mutableStateOf(GlassState.Rest) }
     Column(
         modifier = Modifier
@@ -73,15 +73,17 @@ fun CatalogueScreen(contentPadding: PaddingValues, content: @Composable ColumnSc
             .padding(bottom = 40.dp),
         verticalArrangement = Arrangement.spacedBy(28.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-            Text("State", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                GlassState.entries.forEachIndexed { index, state ->
-                    SegmentedButton(
-                        selected = state == picked,
-                        onClick = { picked = state },
-                        shape = SegmentedButtonDefaults.itemShape(index, GlassState.entries.size),
-                    ) { Text(state.name, maxLines = 1, fontSize = 11.sp) }
+        if (statePicker) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                Text("State", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    GlassState.entries.forEachIndexed { index, state ->
+                        SegmentedButton(
+                            selected = state == picked,
+                            onClick = { picked = state },
+                            shape = SegmentedButtonDefaults.itemShape(index, GlassState.entries.size),
+                        ) { Text(state.name, maxLines = 1, fontSize = 11.sp) }
+                    }
                 }
             }
         }

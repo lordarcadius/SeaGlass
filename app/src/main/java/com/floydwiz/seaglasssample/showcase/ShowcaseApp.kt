@@ -44,6 +44,7 @@ import com.floydwiz.seaglasssample.showcase.catalogue.c4.NavigationPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c5.ContainersPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c6.FeedbackPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c7.FabsPage
+import com.floydwiz.seaglasssample.showcase.catalogue.c8.MotionPage
 import com.floydwiz.seaglasssample.showcase.spike.SpikeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,6 +113,7 @@ fun ShowcaseApp() {
                 composable(Destinations.components[5].route) { ContainersPage(padding) }
                 composable(Destinations.components[6].route) { FeedbackPage(padding) }
                 composable(Destinations.components[7].route) { FabsPage(padding) }
+                composable(Destinations.components[8].route) { MotionPage(padding) }
                 Destinations.all.filter { it != Destinations.spike && it !in Destinations.components }.forEach { destination ->
                     composable(destination.route) {
                         EmptyDestination(destination, Modifier.padding(padding))

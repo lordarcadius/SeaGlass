@@ -20,18 +20,16 @@ class GlassClock {
 
 val LocalGlassClock = staticCompositionLocalOf { GlassClock() }
 
-val LocalMotionEnabled = staticCompositionLocalOf { true }
-
 internal val LocalClockOwned = staticCompositionLocalOf { false }
 
 @Composable
-internal fun rememberGlassClock(running: Boolean): GlassClock {
+internal fun rememberGlassClock(running: Boolean, motionScale: Float): GlassClock {
     val clock = remember { GlassClock() }
-    LaunchedEffect(running) {
+    LaunchedEffect(running, motionScale) {
         if (running) {
             while (true) {
                 androidx.compose.runtime.withFrameNanos { nanos ->
-                    clock.seconds = ((nanos / 1_000_000L) % 16_000L) / 1000f
+                    clock.seconds = ((nanos / 1_000_000f / motionScale) % 16_000f) / 1000f
                 }
             }
         }

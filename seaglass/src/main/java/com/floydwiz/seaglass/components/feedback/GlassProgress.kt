@@ -81,7 +81,7 @@ fun GlassLinearProgress(
                 SeaGlassShape.Pane(height / 2), role, reactsTo = emptySet(),
             )
         } else {
-            val (from, to) = if (motion) left to right else 0f to 0.6f
+            val (from, to) = if (motion) left to right else 0.3f to 0.7f
             GlassSurface(
                 GlassFinish.Fill,
                 Modifier.size(maxWidth, height).drawWithContent {

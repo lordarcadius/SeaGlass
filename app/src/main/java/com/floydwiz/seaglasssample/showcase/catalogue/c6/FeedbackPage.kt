@@ -66,7 +66,7 @@ fun FeedbackPage(contentPadding: PaddingValues) {
     CatalogueScreen(contentPadding) {
         CatalogueSection(
             "Loading", "Glass pebble · Bead",
-            "The loading indicator is a glass pebble tumbling through lens, shard, egg and tumble silhouettes on a 2.4 s alternate loop, its light drifting as it turns. Inside busy surfaces it sits in a clear lens; for inline waits three beads bob in sequence. Reduced motion holds the lens shape and pulses opacity instead.",
+            "The loading indicator is a glass pebble tumbling through lens, shard, egg and tumble silhouettes on a 2.4 s alternate loop, its light drifting as it turns. Inside busy surfaces it sits in a clear lens; for inline waits three beads bob in sequence. With animations off the pebble holds the lens shape.",
         ) {
             ThemePanels {
                 val shapes = listOf("lens" to SeaGlassShape.Lens, "shard" to SeaGlassShape.Shard, "egg" to SeaGlassShape.Egg, "tumble" to SeaGlassShape.Tumble)

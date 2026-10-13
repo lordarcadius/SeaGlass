@@ -14,6 +14,7 @@ object Destinations {
         Destination("catalogue/c5", "C5", "Containers", "Cards, lists, alert, sheet, menu, carousel", 5),
         Destination("catalogue/c6", "C6", "Feedback", "Loading, progress, toasts, banners, badges", 5),
         Destination("catalogue/c7", "C7", "Floating actions", "FAB, extended FAB, FAB menu", 5),
+        Destination("catalogue/c8", "C8", "Motion", "Replay every choreography", 6),
     )
 
     val screens = listOf(
