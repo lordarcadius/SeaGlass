@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.GlassRole
+import com.floydwiz.seaglass.material.GlassLayers
 import com.floydwiz.seaglass.theme.SeaGlassContrast
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +59,19 @@ fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
                             }
                         }
                     }
+                }
+            }
+            Section("Glass layers (debug)") {
+                val layers = state.layers
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    SwitchRow("Shadow", layers.shadow) { state.layers = layers.copy(shadow = it) }
+                    SwitchRow("Caustic", layers.caustic) { state.layers = layers.copy(caustic = it) }
+                    SwitchRow("Contact shadow", layers.contact) { state.layers = layers.copy(contact = it) }
+                    SwitchRow("Body (blur + tint)", layers.body) { state.layers = layers.copy(body = it) }
+                    SwitchRow("Light pool", layers.light) { state.layers = layers.copy(light = it) }
+                    SwitchRow("Grain", layers.grain) { state.layers = layers.copy(grain = it) }
+                    SwitchRow("Volume shadows", layers.volume) { state.layers = layers.copy(volume = it) }
+                    SwitchRow("Rim", layers.rim) { state.layers = layers.copy(rim = it) }
                 }
             }
         }

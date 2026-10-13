@@ -1,5 +1,6 @@
 package com.floydwiz.seaglass.theme
 
+import android.animation.ValueAnimator
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -17,6 +18,11 @@ import com.floydwiz.seaglass.color.SeaGlassPalettes
 import com.floydwiz.seaglass.color.SeaGlassRolePalettes
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.color.dynamicRolePalettes
+import com.floydwiz.seaglass.material.GlassLayers
+import com.floydwiz.seaglass.material.LocalGlassClock
+import com.floydwiz.seaglass.material.LocalGlassLayers
+import com.floydwiz.seaglass.material.LocalMotionEnabled
+import com.floydwiz.seaglass.material.rememberGlassClock
 
 enum class SeaGlassContrast { Standard, Medium, High }
 
@@ -33,6 +39,7 @@ fun SeaGlassTheme(
     reduceTransparency: Boolean = false,
     dynamicColor: Boolean = false,
     seedRole: GlassRole = GlassRole.Aqua,
+    layers: GlassLayers = GlassLayers.All,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -46,7 +53,13 @@ fun SeaGlassTheme(
         if (dynamicColor) dynamicRolePalettes(context) else SeaGlassRolePalettes.Static
     }
 
+    val motionEnabled = remember { ValueAnimator.areAnimatorsEnabled() }
+    val clock = rememberGlassClock(running = motionEnabled && layers.light)
+
     CompositionLocalProvider(
+        LocalGlassLayers provides layers,
+        LocalGlassClock provides clock,
+        LocalMotionEnabled provides motionEnabled,
         LocalSeaGlassDark provides dark,
         LocalGlassContrast provides contrast,
         LocalReduceTransparency provides reduceTransparency,

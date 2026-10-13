@@ -25,5 +25,7 @@ object Destinations {
         Destination("screens/tablet", "S6", "Tablet mail", "Rail, list and reading pane", 7),
     )
 
-    val all = components + screens
+    val spike = Destination("spike", "P", "Performance spike", "Glass over scrolling photos with frame stats", 1)
+
+    val all = listOf(spike) + components + screens
 }

@@ -34,6 +34,7 @@ import com.floydwiz.seaglass.theme.SeaGlassTheme
 import com.floydwiz.seaglasssample.control.ControlSheet
 import com.floydwiz.seaglasssample.control.ThemeMode
 import com.floydwiz.seaglasssample.control.rememberControlState
+import com.floydwiz.seaglasssample.showcase.spike.SpikeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +59,7 @@ fun ShowcaseApp() {
         reduceTransparency = controls.reduceTransparency,
         dynamicColor = controls.dynamicColor,
         seedRole = controls.seedRole,
+        layers = controls.layers,
     ) {
         val navController = rememberNavController()
         val backStack by navController.currentBackStackEntryAsState()
@@ -90,7 +92,8 @@ fun ShowcaseApp() {
                 composable(Destinations.CATALOGUE) {
                     CatalogueHome(padding) { navController.navigate(it.route) }
                 }
-                Destinations.all.forEach { destination ->
+                composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
+                Destinations.all.filter { it != Destinations.spike }.forEach { destination ->
                     composable(destination.route) {
                         EmptyDestination(destination, Modifier.padding(padding))
                     }

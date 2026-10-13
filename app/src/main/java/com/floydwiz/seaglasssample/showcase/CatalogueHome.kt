@@ -22,6 +22,8 @@ import com.floydwiz.seaglass.components.icon.SymbolIcon
 @Composable
 fun CatalogueHome(contentPadding: PaddingValues, onOpen: (Destination) -> Unit) {
     LazyColumn(contentPadding = contentPadding) {
+        item { SectionHeader("Prototype") }
+        item { DestinationRow(Destinations.spike, onOpen) }
         item { SectionHeader("Components") }
         items(Destinations.components) { DestinationRow(it, onOpen) }
         item { SectionHeader("Screens") }
