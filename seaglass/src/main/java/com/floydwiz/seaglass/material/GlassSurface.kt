@@ -45,6 +45,7 @@ fun GlassSurface(
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val interaction = rememberGlassInteraction(finish, enabled, source, reactsTo, pressScale)
+    val adaptive = adaptive || LocalAdaptiveTint.current
     val dark = LocalSeaGlassDark.current
     val resolvedContent = when {
         interaction.disabled -> disabledContentColor(dark)

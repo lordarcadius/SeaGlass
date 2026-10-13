@@ -19,16 +19,21 @@ import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalForcedGlassState
+import com.floydwiz.seaglass.material.glassAccent
 import com.floydwiz.seaglass.material.glassOnRole
 import com.floydwiz.seaglass.shape.SeaGlassShape
+import com.floydwiz.seaglass.color.GlassRole
 import com.floydwiz.seaglass.theme.LocalGlassRole
+import com.floydwiz.seaglass.theme.LocalRolePalettes
 
-class ToolItem(val icon: String, val description: String)
+/** A toolbar tool; [danger] tints the symbol sea pink. */
+class ToolItem(val icon: String, val description: String, val danger: Boolean = false)
 
 /**
  * Floating toolbar: tools share a clear capsule, the active tool is a frost lens and the confirm action is a
  * separate glass lens. Pressing an inactive tool condenses a clear lens that swells 21% past the capsule.
  * - [vertical] draws the 56 dp wide strip, normally tinted with another [activeRole].
+ * - [confirmIcon] is the symbol on the confirm lens.
  */
 @Composable
 fun GlassFloatingToolbar(
@@ -39,6 +44,7 @@ fun GlassFloatingToolbar(
     vertical: Boolean = false,
     activeRole: TonalTones = LocalGlassRole.current,
     onConfirm: (() -> Unit)? = null,
+    confirmIcon: String = "check",
     previewStates: Map<Int, GlassState> = emptyMap(),
     role: TonalTones = LocalGlassRole.current,
 ) {
@@ -56,7 +62,7 @@ fun GlassFloatingToolbar(
                 onClick = { onToolClick(index) },
                 semanticsRole = Role.Button,
                 pressScale = if (active) 0.96f else 58f / 48f,
-                contentColor = if (active) glassOnRole(activeRole) else null,
+                contentColor = if (active) glassOnRole(activeRole) else if (tool.danger) glassAccent(LocalRolePalettes.current[GlassRole.SeaPink]) else null,
             ) {
                 SymbolIcon(tool.icon, size = 24.dp, fill = active, tint = LocalContentColor.current, contentDescription = tool.description)
             }
@@ -76,7 +82,7 @@ fun GlassFloatingToolbar(
             }
             if (onConfirm != null) {
                 GlassSurface(GlassFinish.Glass, Modifier.size(56.dp), SeaGlassShape.Lens, role, onClick = onConfirm) {
-                    SymbolIcon("check", size = 28.dp, weight = 600, tint = LocalContentColor.current, contentDescription = "Confirm")
+                    SymbolIcon(confirmIcon, size = 28.dp, weight = 600, tint = LocalContentColor.current, contentDescription = "Confirm")
                 }
             }
         }

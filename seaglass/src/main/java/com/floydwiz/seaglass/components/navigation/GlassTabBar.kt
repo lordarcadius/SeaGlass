@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
@@ -88,6 +89,7 @@ private val BarHeight = 62.dp
  * Floating tab bar: a clear capsule with the current tab as a frost lens and search in its own lens beside it.
  * - Pressing or dragging turns the lens clear, 100×74, bulging past the bar, and enlarges the tab beneath it.
  * - [minimized] condenses it to a current-tab lens, an [accessory] capsule and the search lens.
+ * - [tabWidth] is the width of each tab, 76 dp for four or more tabs and 92 dp for three.
  */
 @Composable
 fun GlassTabBar(
@@ -96,6 +98,7 @@ fun GlassTabBar(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     minimized: Boolean = false,
+    tabWidth: Dp = TabWidth,
     accessory: (@Composable () -> Unit)? = null,
     onSearch: (() -> Unit)? = null,
     onExpand: () -> Unit = {},
@@ -115,7 +118,7 @@ fun GlassTabBar(
                         scaleX = lerp(1f, 0.3f, geometry)
                         transformOrigin = TransformOrigin(0f, 0.5f)
                     },
-                ) { FullBar(tabs, selectedIndex, onSelect, onSearch, previewStates, role) }
+                ) { FullBar(tabs, selectedIndex, onSelect, onSearch, previewStates, tabWidth, role) }
             }
             if (showMinimized) {
                 Box(
@@ -143,9 +146,9 @@ fun GlassTabBar(
 }
 
 @Composable
-private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> Unit, onSearch: (() -> Unit)?, previewStates: Map<Int, GlassState>, role: TonalTones) {
+private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> Unit, onSearch: (() -> Unit)?, previewStates: Map<Int, GlassState>, tabWidth: Dp, role: TonalTones) {
     val density = LocalDensity.current.density
-    val tabPx = TabWidth.value * density
+    val tabPx = tabWidth.value * density
     val insetPx = 4f * density
     val count = tabs.size
     val scope = rememberCoroutineScope()
@@ -161,7 +164,7 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
         derivedStateOf { ((lens.centre() - tabPx / 2f - insetPx) / tabPx).roundToInt().coerceIn(0, count - 1) }
     }
     val showLens by remember { derivedStateOf { pressAmount > 0.01f } }
-    val barPx = (TabWidth * count + 8.dp).value * density
+    val barPx = (tabWidth * count + 8.dp).value * density
     val bulgePx = 6f * density
     val dark = LocalSeaGlassDark.current
     val ink = if (dark) Content.OnSurfaceDark else Content.OnSurfaceLight
@@ -169,7 +172,7 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
             Modifier
-                .size(TabWidth * count + 8.dp, BarHeight)
+                .size(tabWidth * count + 8.dp, BarHeight)
                 .semantics { this.role = Role.Tab }
                 .pointerInput(count, tabPx) {
                     awaitEachGesture {
@@ -189,13 +192,13 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
                     }
                 },
         ) {
-            GlassSurface(GlassFinish.Clear, Modifier.size(TabWidth * count + 8.dp, BarHeight), SeaGlassShape.Capsule, role, reactsTo = emptySet())
+            GlassSurface(GlassFinish.Clear, Modifier.size(tabWidth * count + 8.dp, BarHeight), SeaGlassShape.Capsule, role, reactsTo = emptySet())
             CompositionLocalProvider(LocalForcedGlassState provides null) {
                 GlassSurface(
                     finish = GlassFinish.Frost,
                     modifier = Modifier
                         .offset(y = 4.dp)
-                        .size(TabWidth, BarHeight - 8.dp)
+                        .size(tabWidth, BarHeight - 8.dp)
                         .graphicsLayer {
                             val left = lens.leftEdge(-bulgePx)
                             translationX = left
@@ -232,11 +235,11 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
                     val magnified = pressing && index == hot
                     val color = if (selected) glassOnRole(role) else ink
                     val itemSource = remember { MutableInteractionSource() }
-                    Box(Modifier.size(TabWidth, BarHeight - 8.dp).hoverable(itemSource).semantics { this.selected = index == selectedIndex }) {
+                    Box(Modifier.size(tabWidth, BarHeight - 8.dp).hoverable(itemSource).semantics { this.selected = index == selectedIndex }) {
                         CompositionLocalProvider(LocalForcedGlassState provides previewStates[index]) {
                         GlassSurface(
                             finish = GlassFinish.Plain,
-                            modifier = Modifier.size(TabWidth, BarHeight - 8.dp),
+                            modifier = Modifier.size(tabWidth, BarHeight - 8.dp),
                             shape = SeaGlassShape.Pane((BarHeight - 8.dp) / 2),
                             interactionSource = itemSource,
                             reactsTo = setOf(GlassState.Hover, GlassState.Focus),

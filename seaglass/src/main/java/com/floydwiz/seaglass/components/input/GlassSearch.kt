@@ -180,6 +180,7 @@ private val Waveform = listOf(8, 14, 22, 30, 18, 26, 36, 24, 14, 20, 32, 22, 12,
 /**
  * Prompt bar: a clear capsule with a plain add and mic, a glass send lens and an attachment capsule above it.
  * While [listening] the whole bar turns to tinted glass with a live waveform and a pearl stop lens.
+ * - With [onVoice] set, an empty field shows a lavender glass voice lens in place of send.
  */
 @Composable
 fun GlassPromptBar(
@@ -193,6 +194,7 @@ fun GlassPromptBar(
     onAdd: () -> Unit = {},
     listening: Boolean = false,
     onListeningChange: (Boolean) -> Unit = {},
+    onVoice: (() -> Unit)? = null,
     listeningRole: TonalTones = LocalRolePalettes.current[GlassRole.Lavender],
     role: TonalTones = LocalGlassRole.current,
 ) {
@@ -245,13 +247,19 @@ fun GlassPromptBar(
                         shape = SeaGlassShape.Lens,
                         onClick = { onListeningChange(true) },
                     ) { SymbolIcon("mic", size = 22.dp, tint = ink, contentDescription = "Dictate") }
+                    val voice = onVoice != null && value.isBlank()
                     GlassSurface(
                         finish = GlassFinish.Glass,
                         modifier = Modifier.size(44.dp),
                         shape = SeaGlassShape.Lens,
-                        role = role,
-                        onClick = onSend,
-                    ) { SymbolIcon("arrow_upward", size = 24.dp, weight = 600, tint = LocalContentColor.current, contentDescription = "Send") }
+                        role = if (voice) listeningRole else role,
+                        onClick = if (voice) onVoice!! else onSend,
+                    ) {
+                        SymbolIcon(
+                            if (voice) "graphic_eq" else "arrow_upward", size = 24.dp, weight = 600, tint = LocalContentColor.current,
+                            contentDescription = if (voice) "Voice mode" else "Send",
+                        )
+                    }
                 }
             }
         }

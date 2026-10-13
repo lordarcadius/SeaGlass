@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -114,6 +115,7 @@ class FabMenuItem(val icon: String, val label: String, val onClick: () -> Unit)
  * - Opening veils the content with a light blur, melts the pebble through an egg into a round glass close lens, and
  *   raises frost capsules 62 dp apart, each 40 ms after the previous, on spatial.fast.
  * - [label] makes the closed button an extended FAB that narrows to the close lens.
+ * - [contentPadding] insets the button and items, for example by the navigation bar, while the veil still fills the area.
  */
 @Composable
 fun GlassFabMenu(
@@ -123,6 +125,7 @@ fun GlassFabMenu(
     modifier: Modifier = Modifier,
     icon: String = "edit",
     label: String? = null,
+    contentPadding: PaddingValues = PaddingValues(),
     role: TonalTones = LocalGlassRole.current,
 ) {
     val dark = LocalSeaGlassDark.current
@@ -164,7 +167,7 @@ fun GlassFabMenu(
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onExpandedChange(false) },
             )
             Column(
-                Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 16.dp + 56.dp + 14.dp),
+                Modifier.align(Alignment.BottomEnd).padding(contentPadding).padding(end = 16.dp, bottom = 16.dp + 56.dp + 14.dp),
                 Arrangement.spacedBy(10.dp, Alignment.Bottom),
                 Alignment.End,
             ) {
@@ -205,6 +208,7 @@ fun GlassFabMenu(
             finish = GlassFinish.Glass,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
+                .padding(contentPadding)
                 .padding(16.dp)
                 .size(lerp(closedWidth, 56.dp, melt), 56.dp)
                 .semantics { contentDescription = if (expanded) "Close menu" else (label ?: "Open menu") },

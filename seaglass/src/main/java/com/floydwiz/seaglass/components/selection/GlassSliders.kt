@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.TonalTones
@@ -48,6 +49,7 @@ import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalForcedGlassState
 import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.glassContentColor
+import com.floydwiz.seaglass.material.glassOnSurfaceVariant
 import com.floydwiz.seaglass.material.white
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
@@ -291,7 +293,8 @@ private fun RailSlider(
 
 /**
  * Pill slider with the symbol inside the liquid, for volume and brightness.
- * - Horizontal 300×48 (radius 24) with a percentage on the right; vertical 64×168 (radius 28).
+ * - Horizontal 300×48 by default with a percentage on the right, or [endIcon] there instead; vertical 64×168 (radius 28).
+ * - [width] and [height] resize it, for example 348×40 in a settings list.
  * - The liquid grows 2% while dragged.
  */
 @Composable
@@ -304,11 +307,12 @@ fun GlassPillSlider(
     enabled: Boolean = true,
     role: TonalTones = LocalGlassRole.current,
     interactionSource: MutableInteractionSource? = null,
+    width: Dp = if (vertical) 64.dp else 300.dp,
+    height: Dp = if (vertical) 168.dp else 48.dp,
+    endIcon: String? = null,
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
-    val width = if (vertical) 64.dp else 300.dp
-    val height = if (vertical) 168.dp else 48.dp
-    val radius = if (vertical) 28.dp else 24.dp
+    val radius = if (vertical) 28.dp else height / 2
     val forcedPress = LocalForcedGlassState.current == GlassState.Press
     var dragging by remember { mutableStateOf(false) }
     val grow by animateFloatAsState(if (enabled && (dragging || forcedPress)) 1.02f else 1f, SeaGlassTokens.Motion.spatialFast(), label = "pillGrow")
@@ -382,15 +386,21 @@ fun GlassPillSlider(
                     role = role,
                     reactsTo = emptySet(),
                 )
-                SymbolIcon(icon, Modifier.offset(16.dp, 13.dp), size = 22.dp, fill = true, tint = onFill)
-                Text(
-                    "${(fraction * 100).roundToInt()}%",
-                    Modifier.offset(width - 76.dp, 15.dp).size(60.dp, 20.dp),
-                    color = if (dark) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
-                )
+                val iconSize = (height - 20.dp).coerceAtMost(22.dp)
+                val iconInset = (height - iconSize) / 2 + 3.dp
+                SymbolIcon(icon, Modifier.offset(iconInset, (height - iconSize) / 2), size = iconSize, fill = true, tint = onFill)
+                if (endIcon != null) {
+                    SymbolIcon(endIcon, Modifier.offset(width - iconInset - iconSize, (height - iconSize) / 2), size = iconSize, tint = glassOnSurfaceVariant())
+                } else {
+                    Text(
+                        "${(fraction * 100).roundToInt()}%",
+                        Modifier.offset(width - 76.dp, (height - 18.dp) / 2).size(60.dp, 20.dp),
+                        color = if (dark) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                    )
+                }
             }
         }
     }
