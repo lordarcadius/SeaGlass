@@ -74,6 +74,14 @@ class SeaGlassShape private constructor(
         val Shard = percent("shard", 0.24f, 0.64f, 0.38f, 0.58f, 0.58f, 0.30f, 0.66f, 0.36f)
         val Egg = percent("egg", 0.50f, 0.50f, 0.47f, 0.53f, 0.62f, 0.60f, 0.40f, 0.38f)
 
+        /** Interpolates the resolved radii of [from] and [to]; used for loading morphs and the FAB-to-lens melt. */
+        fun lerp(from: SeaGlassShape, to: SeaGlassShape, fraction: Float): SeaGlassShape =
+            SeaGlassShape("lerp-${from.key}-${to.key}-$fraction") { w, h, density ->
+                val a = from.radii(w, h, density)
+                val b = to.radii(w, h, density)
+                FloatArray(8) { a[it] + (b[it] - a[it]) * fraction }
+            }
+
         /** Circular radius per corner, clockwise from top-left; used for split buttons. */
         fun Corners(topStart: Dp, topEnd: Dp, bottomEnd: Dp, bottomStart: Dp) =
             SeaGlassShape("corners-${topStart.value}-${topEnd.value}-${bottomEnd.value}-${bottomStart.value}") { _, _, density ->

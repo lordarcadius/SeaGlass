@@ -301,3 +301,22 @@ val PhotoCrops = listOf(
     130 to 100, 520 to 130, 780 to 270, 250 to 620, 950 to 430, 1030 to 770, 330 to 350,
     250 to 920, 670 to 930, 1050 to 110, 1000 to 1150, 430 to 1130, 720 to 50, 630 to 600,
 )
+
+/** A crop of the sample photo as a plain content tile (no glass), zoomed on one of [PhotoCrops]. */
+@Composable
+fun PhotoTile(index: Int, modifier: Modifier = Modifier, shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(0.dp), zoom: Float = 2.6f, dim: Boolean = false) {
+    val (cx, cy) = PhotoCrops[index % PhotoCrops.size]
+    Box(modifier.clip(shape)) {
+        Image(
+            painter = painterResource(com.floydwiz.seaglasssample.R.drawable.seaglass_photo),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            colorFilter = if (dim) ColorFilter.colorMatrix(ColorMatrix().apply { setToScale(0.55f, 0.55f, 0.55f, 1f) }) else null,
+            modifier = Modifier.fillMaxSize().graphicsLayer {
+                scaleX = zoom
+                scaleY = zoom
+                transformOrigin = TransformOrigin(cx / 1200f, cy / 1200f)
+            },
+        )
+    }
+}

@@ -20,6 +20,11 @@ import com.floydwiz.seaglass.theme.SeaGlassTheme
 @Preview(name = "Dark", widthDp = 380, heightDp = 360, uiMode = Configuration.UI_MODE_NIGHT_YES)
 internal annotation class LightDarkPreviews
 
+/** Light and dark previews of a tall composable. */
+@Preview(name = "Light", widthDp = 380, heightDp = 640)
+@Preview(name = "Dark", widthDp = 380, heightDp = 640, uiMode = Configuration.UI_MODE_NIGHT_YES)
+internal annotation class TallLightDarkPreviews
+
 /** Theme plus the canvas backdrop glass blurs; dark follows the preview's uiMode. */
 @Composable
 internal fun GlassPreview(content: @Composable ColumnScope.() -> Unit) {
