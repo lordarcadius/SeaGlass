@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.material.GlassLayers
 import com.floydwiz.seaglass.theme.SeaGlassContrast
 
 @OptIn(ExperimentalMaterial3Api::class)

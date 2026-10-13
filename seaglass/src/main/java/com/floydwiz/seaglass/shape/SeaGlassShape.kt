@@ -74,6 +74,16 @@ class SeaGlassShape private constructor(
         val Shard = percent("shard", 0.24f, 0.64f, 0.38f, 0.58f, 0.58f, 0.30f, 0.66f, 0.36f)
         val Egg = percent("egg", 0.50f, 0.50f, 0.47f, 0.53f, 0.62f, 0.60f, 0.40f, 0.38f)
 
+        /** Circular radius per corner, clockwise from top-left; used for split buttons. */
+        fun Corners(topStart: Dp, topEnd: Dp, bottomEnd: Dp, bottomStart: Dp) =
+            SeaGlassShape("corners-${topStart.value}-${topEnd.value}-${bottomEnd.value}-${bottomStart.value}") { _, _, density ->
+                val tl = topStart.value * density
+                val tr = topEnd.value * density
+                val br = bottomEnd.value * density
+                val bl = bottomStart.value * density
+                floatArrayOf(tl, tl, tr, tr, br, br, bl, bl)
+            }
+
         /** Uniform rounded pane; 24, 28, 32 and 36 dp are the standard sizes. */
         fun Pane(radius: Dp) = SeaGlassShape("pane-${radius.value}") { _, _, density ->
             val r = radius.value * density

@@ -1,5 +1,7 @@
 package com.floydwiz.seaglasssample.showcase
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import android.graphics.Color
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -19,10 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -37,6 +37,8 @@ import com.floydwiz.seaglasssample.control.LocalControls
 import com.floydwiz.seaglasssample.control.ThemeMode
 import com.floydwiz.seaglasssample.control.rememberControlState
 import com.floydwiz.seaglasssample.showcase.catalogue.c0.LanguagePage
+import com.floydwiz.seaglasssample.showcase.catalogue.c1.ButtonsPage
+import com.floydwiz.seaglasssample.showcase.catalogue.c2.SelectionPage
 import com.floydwiz.seaglasssample.showcase.spike.SpikeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,7 +100,9 @@ fun ShowcaseApp() {
                 }
                 composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
                 composable(Destinations.components[0].route) { LanguagePage(padding) }
-                Destinations.all.filter { it != Destinations.spike && it != Destinations.components[0] }.forEach { destination ->
+                composable(Destinations.components[1].route) { ButtonsPage(padding) }
+                composable(Destinations.components[2].route) { SelectionPage(padding) }
+                Destinations.all.filter { it != Destinations.spike && it !in Destinations.components.take(3) }.forEach { destination ->
                     composable(destination.route) {
                         EmptyDestination(destination, Modifier.padding(padding))
                     }

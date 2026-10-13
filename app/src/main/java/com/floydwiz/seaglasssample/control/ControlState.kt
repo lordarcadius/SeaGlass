@@ -1,12 +1,12 @@
 package com.floydwiz.seaglasssample.control
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import com.floydwiz.seaglass.color.GlassRole
 import com.floydwiz.seaglass.material.GlassLayers
 import com.floydwiz.seaglass.theme.SeaGlassContrast

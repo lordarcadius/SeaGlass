@@ -11,6 +11,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
@@ -34,34 +36,44 @@ fun GlassSurface(
     adaptive: Boolean = false,
     interactionSource: MutableInteractionSource? = null,
     onClick: (() -> Unit)? = null,
+    semanticsRole: Role? = Role.Button,
+    reactsTo: Set<GlassState> = AllInteractiveStates,
+    pressScale: Float = SeaGlassTokens.State.Press.Scale,
+    contentColor: Color? = null,
     contentAlignment: Alignment = Alignment.Center,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
-    val interaction = rememberGlassInteraction(finish, enabled, source)
+    val interaction = rememberGlassInteraction(finish, enabled, source, reactsTo, pressScale)
     val dark = LocalSeaGlassDark.current
-    val contentColor = if (interaction.disabled) disabledContentColor(dark) else glassContentColor(interaction.finish, role, dark)
+    val resolvedContent = when {
+        interaction.disabled -> disabledContentColor(dark)
+        contentColor != null -> contentColor
+        else -> glassContentColor(interaction.finish, role, dark)
+    }
     val interactive = if (onClick != null) {
-        Modifier.hoverable(source).clickable(interactionSource = source, indication = null, enabled = enabled, onClick = onClick)
+        Modifier.hoverable(source).clickable(
+            interactionSource = source, indication = null, enabled = enabled, role = semanticsRole, onClick = onClick,
+        )
     } else {
         Modifier
     }
     val magnify = interaction.finish == GlassFinish.Lens && !LocalReduceTransparency.current && LocalGlassLayers.current.body
     val magnifier = rememberLensMagnifier()
 
-    CompositionLocalProvider(LocalContentColor provides contentColor) {
+    CompositionLocalProvider(LocalContentColor provides resolvedContent) {
         if (magnify) {
             Box(
-                modifier.then(interactive).seaGlass(interaction, shape, role, tinted, adaptive, contentColor, Stages.Frame),
+                modifier.then(interactive).seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.Frame),
                 contentAlignment,
             ) {
-                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptive, contentColor, Stages.Body, magnifier))
-                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptive, contentColor, Stages.Inner))
+                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.Body, magnifier))
+                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.Inner))
                 content()
             }
         } else {
             Box(
-                modifier.then(interactive).seaGlass(interaction, shape, role, tinted, adaptive, contentColor, Stages.All),
+                modifier.then(interactive).seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.All),
                 contentAlignment,
                 content = content,
             )

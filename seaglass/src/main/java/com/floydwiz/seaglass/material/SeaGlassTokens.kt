@@ -110,5 +110,12 @@ object SeaGlassTokens {
         val EffectsFast = SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 3800f)
         val EffectsDefault = SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)
         val EffectsSlow = SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 800f)
+
+        fun <T> spatialFast() = SpringSpec<T>(dampingRatio = 0.6f, stiffness = 800f)
+        fun <T> spatialDefault() = SpringSpec<T>(dampingRatio = 0.8f, stiffness = 380f)
+        fun <T> spatialSlow() = SpringSpec<T>(dampingRatio = 0.8f, stiffness = 200f)
+        fun <T> effectsFast() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 3800f)
+        fun <T> effectsDefault() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)
+        fun <T> effectsSlow() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 800f)
     }
 }

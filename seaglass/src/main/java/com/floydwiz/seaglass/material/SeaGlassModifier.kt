@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.shadow.DropShadowPainter
@@ -66,6 +65,8 @@ import kotlin.math.sin
 
 enum class GlassState { Rest, Hover, Focus, Press, Disabled }
 
+val AllInteractiveStates: Set<GlassState> = setOf(GlassState.Hover, GlassState.Focus, GlassState.Press)
+
 /** Forces the state of every glass element below it; used by the catalogue state picker. */
 val LocalForcedGlassState = compositionLocalOf<GlassState?> { null }
 
@@ -81,13 +82,24 @@ class GlassInteraction internal constructor(
     internal val hover: State<Float>,
     internal val press: State<Float>,
     internal val focus: State<Float>,
-)
+    internal val pressScale: Float,
+) {
+    val hoverFraction: Float get() = hover.value
+    val pressFraction: Float get() = press.value
+    val focusFraction: Float get() = focus.value
+}
 
+/**
+ * [reactsTo] limits which states this element shows; a switch track takes focus and hover but not press.
+ * [pressScale] replaces the 0.96 press scale, for example 1.2 for a cluster item that bulges past its bar.
+ */
 @Composable
 fun rememberGlassInteraction(
     finish: GlassFinish,
     enabled: Boolean = true,
     interactionSource: InteractionSource? = null,
+    reactsTo: Set<GlassState> = AllInteractiveStates,
+    pressScale: Float = SeaGlassTokens.State.Press.Scale,
 ): GlassInteraction {
     val forced = LocalForcedGlassState.current
     val source = interactionSource ?: remember { MutableInteractionSource() }
@@ -96,9 +108,9 @@ fun rememberGlassInteraction(
     val realFocus = source.collectIsFocusedAsState().value
 
     val disabled = !enabled || forced == GlassState.Disabled
-    val pressed = !disabled && (forced == GlassState.Press || (forced == null && realPress))
-    val hovered = !disabled && (forced == GlassState.Hover || (forced == null && realHover))
-    val focused = !disabled && (forced == GlassState.Focus || (forced == null && realFocus))
+    val pressed = GlassState.Press in reactsTo && !disabled && (forced == GlassState.Press || (forced == null && realPress))
+    val hovered = GlassState.Hover in reactsTo && !disabled && (forced == GlassState.Hover || (forced == null && realHover))
+    val focused = GlassState.Focus in reactsTo && !disabled && (forced == GlassState.Focus || (forced == null && realFocus))
 
     val drawn = when {
         disabled && finish != GlassFinish.Plain && finish != GlassFinish.Dry -> GlassFinish.Dry
@@ -111,7 +123,7 @@ fun rememberGlassInteraction(
     val hover = animateFloatAsState(if (hovered) 1f else 0f, spring, label = "glassHover")
     val press = animateFloatAsState(if (pressed) 1f else 0f, spring, label = "glassPress")
     val focus = animateFloatAsState(if (focused) 1f else 0f, spring, label = "glassFocus")
-    return remember(drawn, disabled) { GlassInteraction(drawn, disabled, hover, press, focus) }
+    return remember(drawn, disabled, pressScale) { GlassInteraction(drawn, disabled, hover, press, focus, pressScale) }
 }
 
 internal enum class Stages { All, Frame, Body, Inner }
@@ -182,7 +194,7 @@ internal fun Modifier.seaGlass(
 }
 
 private fun Modifier.glassTransform(interaction: GlassInteraction): Modifier = graphicsLayer {
-    val scale = 1f + (SeaGlassTokens.State.Press.Scale - 1f) * interaction.press.value
+    val scale = 1f + (interaction.pressScale - 1f) * interaction.press.value
     scaleX = scale
     scaleY = scale
     if (interaction.finish.isRaised) {
@@ -299,24 +311,21 @@ private fun Modifier.glassBehind(
     val intSize = IntSize(size.width.roundToInt(), size.height.roundToInt())
     val raised = finish.isRaised
 
-    val shadowPainter = spec.shadow.takeIf { layers.shadow }?.let {
-        val spread = -((1f - it.scaleX) * w + (1f - it.scaleY) * h) / 4f
-        DropShadowPainter(
-            shape,
-            Shadow(
-                radius = shadowRadiusDp(sigmaDp = it.blur, density = density).dp,
-                color = it.color,
-                spread = spread.dp,
-                offset = DpOffset(0.dp, it.offsetY.dp),
-            ),
-        )
+    val shadowSpec = spec.shadow.takeIf { layers.shadow }
+    val shadowPainter = shadowSpec?.let {
+        DropShadowPainter(shape, Shadow(radius = shadowRadiusDp(sigmaDp = it.blur, density = density).dp, color = it.color))
     }
     val caustic = spec.caustic.takeIf { layers.caustic }?.let { ovalPaint(it, w, h, density) }
     val contact = spec.contact.takeIf { layers.contact }?.let { ovalPaint(it, w, h, density) }
 
     val shadowLayer = obtainGraphicsLayer()
     shadowLayer.record(this, layoutDirection, intSize) {
-        shadowPainter?.let { with(it) { draw(size) } }
+        if (shadowSpec != null && shadowPainter != null) {
+            withTransform({
+                translate(0f, shadowSpec.offsetY * density)
+                scale(shadowSpec.scaleX, shadowSpec.scaleY, pivot = Offset(size.width / 2f, size.height / 2f))
+            }) { with(shadowPainter) { draw(size) } }
+        }
     }
     val ovalLayer = obtainGraphicsLayer()
     ovalLayer.record(this, layoutDirection, intSize) {
