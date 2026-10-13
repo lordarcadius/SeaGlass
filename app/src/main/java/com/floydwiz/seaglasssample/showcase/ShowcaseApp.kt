@@ -49,6 +49,10 @@ import com.floydwiz.seaglasssample.showcase.catalogue.c7.FabsPage
 import com.floydwiz.seaglasssample.showcase.motion.MotionLab
 import com.floydwiz.seaglasssample.demos.files.FilesDemo
 import com.floydwiz.seaglasssample.demos.gallery.GalleryDemo
+import com.floydwiz.seaglasssample.demos.home.SmartHomeDemo
+import com.floydwiz.seaglasssample.demos.music.MusicDemo
+import com.floydwiz.seaglasssample.demos.notes.NotesDemo
+import com.floydwiz.seaglasssample.demos.weather.WeatherDemo
 import com.floydwiz.seaglasssample.demos.todo.TodoDemo
 import com.floydwiz.seaglasssample.showcase.a11y.AccessibilityLab
 import com.floydwiz.seaglasssample.showcase.home.HomeScreen
@@ -138,7 +142,7 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
                         DestinationList(padding, listOf("Screens" to Destinations.screens), { navController.navigate(it.route) })
                     }
                     composable(Destinations.DEMOS) {
-                        DestinationList(padding, listOf("Demos" to Destinations.demos), { navController.navigate(it.route) }, enabled = { it.route in BuiltDemos })
+                        DestinationList(padding, listOf("Demos" to Destinations.demos), { navController.navigate(it.route) })
                     }
                     composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
                     composable(Destinations.components[0].route) { LanguagePage(padding) }
@@ -149,6 +153,10 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
                     composable(Destinations.components[5].route) { ContainersPage(padding) }
                     composable(Destinations.components[6].route) { FeedbackPage(padding) }
                     composable(Destinations.components[7].route) { FabsPage(padding) }
+                    composable("demos/music") { MusicDemo(onBack = { navController.popBackStack() }) }
+                    composable("demos/weather") { WeatherDemo(onBack = { navController.popBackStack() }) }
+                    composable("demos/home") { SmartHomeDemo(onBack = { navController.popBackStack() }) }
+                    composable("demos/notes") { NotesDemo(onBack = { navController.popBackStack() }) }
                     composable("demos/files") { FilesDemo(onBack = { navController.popBackStack() }) }
                     composable("demos/todo") { TodoDemo(onBack = { navController.popBackStack() }) }
                     composable("demos/gallery") { GalleryDemo(onBack = { navController.popBackStack() }) }
@@ -169,4 +177,3 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
     }
 }
 
-private val BuiltDemos = setOf("demos/gallery", "demos/todo", "demos/files")

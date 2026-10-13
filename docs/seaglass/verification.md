@@ -39,6 +39,17 @@ Per screen the lowest values are: Settings 6.45, Library 4.15, Assistant 3.76, I
 
 While building the demos, glass placed inside the `backdrop` slot of `GlassBackdrop` (list content with milk rows, filled sliders and bubbles) turned out to lose its backdrop body, because Haze lets an effect inside a source blur only sources below it. Milk rows were transparent and liquid fills pale. `GlassBackdrop` now has a `layer` slot (a second source above the backdrop) and the Inbox, Assistant and Library screens moved their lists into it. Re-running the matrix for those three screens plus the Gallery, Todo and File manager demos (6 screens × 4 modes × 2 themes = 48 captures, 1160 measurements, phone frame, tablet AVD): **0 below threshold**. The Inbox preview line that failed under the Compose button's glow (above) no longer fails, because the button's glow is now drawn by a glass with a body. The first-pass numbers above, and `measurements.csv`, are from before this change; the screens that did not move (In call, Settings, Tablet mail) are unaffected.
 
+## Demos (M10 and M11)
+
+The seven demos were captured with the same matrix (7 demos × 4 modes × 2 themes, phone frame on the tablet AVD; 1160 measurements for Gallery, Todo and File manager together with the Inbox, Assistant and Library re-run, and 944 for Music, Weather, Smart home and Notes). Findings:
+
+- Fixed: liquid bar labels that fell on the well (1.4:1); the floating controls lens on bright photos in dark (now an ink lens); the Weather sky on dark themes (it was a bright sky behind light text; it is now mixed 92% into the surface); the Music mini player over bright cover thumbnails (adaptive tint now counts the finish's white fill and reads the 95th percentile); the Notes editor's share lens hidden behind the controls lens.
+- Measurement script changes while doing this (calibration still reproduces the token ratios): text boxes are tightened to their ink before the side strips are taken (a list row's title node is wider than its text and its strips fell on neighbouring text), nodes narrower than 12 px are skipped, and narrow glyphs use a 4 px ring.
+- Remaining, standard and medium modes only, dark theme:
+  - **Weather** (standard dark): the place name and the hourly labels on the clear overlay card and items measure 3.5 to 3.8 at the 5th percentile (median 4.7 to 5.3) against 4.5. The text sits in the top-left specular pool of the clear glass; High contrast, Reduced and Medium pass. Not fixed: it is the dark clear recipe over a saturated sky, as on the board.
+  - **Music** (standard and medium dark): the mini player's title measures 2.7 and 3.8 where a bright cover thumbnail passes under its left end; the artist line 4.3. The tint is now partly engaged (it was not) but does not reach full strength for a small bright patch.
+  - **Smart home**: the single-digit count beads on the scope bar read 1.0 to 1.4 at the 5th percentile in every mode, a measurement limit: the bead's white gloss highlight is inside the digit's box, and the median is 5.5 to 6.7. Not a defect that was observed on screen.
+
 ## Wiring checked live
 
 - **System contrast**: `adb shell settings put secure contrast_level 1.0` while the app was running switched the library to High contrast (outlined bar, darker text) without a restart, and `0.0` switched it back. Below 0.25 is Standard, below 0.75 Medium and above that High.

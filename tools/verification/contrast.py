@@ -62,6 +62,16 @@ def ink_height(lum, bounds, reference):
     return int(rows[-1] - rows[0] + 1) if rows.size else 0
 
 
+def tighten(lum, bounds, reference):
+    """Shrinks the box horizontally to the columns that hold ink, since a node can be wider than its text."""
+    x0, y0, x1, y1 = bounds
+    region = np.abs(lum[y0:y1, x0:x1] - reference)
+    columns = np.where(region.max(axis=0) >= 0.5 * region.max())[0]
+    if columns.size == 0:
+        return bounds
+    return (x0 + int(columns[0]), y0, x0 + int(columns[-1]) + 1, y1)
+
+
 def side_background(lum, bounds, pad, width):
     """Pixels in strips just left and right of the middle of the bounds: the glass or surface the text sits on."""
     x0, y0, x1, y1 = bounds
@@ -95,19 +105,24 @@ def main():
         if not bounds or node.get("enabled") == "false":
             continue
         x0, y0, x1, y1 = bounds
-        if x1 <= x0 or y1 - y0 < 12 or y0 < top_safe or x1 > width or y1 > height or x0 < 0:
+        if x1 - x0 < 12 or y1 - y0 < 12 or y0 < top_safe or x1 > width or y1 > height or x0 < 0:
             continue
         text = node.get("text", "")
         desc = node.get("content-desc", "")
         w, h = x1 - x0, y1 - y0
         ligature = bool(text) and re.fullmatch(r"[a-z0-9_]+", text) is not None and abs(w - h) <= 8
-        if text and not ligature:
-            background = side_background(lum, bounds, max(3, int(2 * density)), max(4, int(3 * density)))
+        narrow = bool(text) and not ligature and w < 14 * density
+        if text and not ligature and not narrow:
+            pad, strip = max(3, int(2 * density)), max(4, int(3 * density))
+            background = side_background(lum, bounds, pad, strip)
+            if background.size >= 8:
+                bounds = tighten(lum, bounds, float(np.median(background)))
+                background = side_background(lum, bounds, pad, strip)
             result = measure(lum, bounds, background)
             kind = "text"
             large = result is not None and ink_height(lum, bounds, float(np.median(background))) >= 0.7 * 18 * density
-        elif ligature:
-            result = measure(lum, bounds, ring_background(lum, bounds, (max(0, x0 - 12), max(0, y0 - 12), min(width, x1 + 12), min(height, y1 + 12))))
+        elif ligature or narrow:
+            result = measure(lum, bounds, ring_background(lum, bounds, (max(0, x0 - (4 if narrow else 12)), max(0, y0 - (4 if narrow else 12)), min(width, x1 + (4 if narrow else 12)), min(height, y1 + (4 if narrow else 12)))))
             kind = "icon"
             large = True
         elif desc and node.get("clickable") != "false" or (desc and (x1 - x0) <= 90 * density):

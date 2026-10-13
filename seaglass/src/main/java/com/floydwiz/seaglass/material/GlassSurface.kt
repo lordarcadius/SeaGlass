@@ -49,7 +49,7 @@ fun GlassSurface(
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val interaction = rememberGlassInteraction(finish, enabled, source, reactsTo, pressScale)
     val dark = LocalSeaGlassDark.current
-    val adaptiveTint = rememberAdaptive(adaptive, if (dark) darkBrightnessLift(finish) else 1f)
+    val adaptiveTint = rememberAdaptive(adaptive, if (dark) darkBrightnessLift(finish) else 1f, if (dark) darkWhiteFill(finish) else 0f)
     if (onAdaptiveSample != null) {
         LaunchedEffect(adaptiveTint.sample?.luminance, adaptiveTint.amount) { adaptiveTint.sample?.let(onAdaptiveSample) }
     }
@@ -95,4 +95,10 @@ private fun darkBrightnessLift(finish: GlassFinish): Float = when (finish) {
     GlassFinish.Clear -> 1.55f
     GlassFinish.Lens -> 1.65f
     else -> 1f
+}
+
+/** The luminance a finish adds on dark themes with its white fill, for adaptive tint. */
+private fun darkWhiteFill(finish: GlassFinish): Float = when (finish) {
+    GlassFinish.Clear, GlassFinish.Lens -> 0.2f
+    else -> 0f
 }

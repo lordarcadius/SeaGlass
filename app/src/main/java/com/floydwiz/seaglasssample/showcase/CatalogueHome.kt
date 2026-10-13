@@ -16,22 +16,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 
-/** A list of destinations in titled sections; rows are disabled while [enabled] says the destination is not built yet. */
+/** A list of destinations in titled sections. */
 @Composable
 fun DestinationList(
     contentPadding: PaddingValues,
     sections: List<Pair<String, List<Destination>>>,
     onOpen: (Destination) -> Unit,
-    enabled: (Destination) -> Boolean = { true },
 ) {
     LazyColumn(contentPadding = contentPadding) {
         sections.forEach { (title, destinations) ->
             item { SectionHeader(title) }
-            items(destinations) { DestinationRow(it, enabled(it), onOpen) }
+            items(destinations) { DestinationRow(it, onOpen) }
         }
     }
 }
@@ -47,9 +45,9 @@ private fun SectionHeader(title: String) {
 }
 
 @Composable
-private fun DestinationRow(destination: Destination, enabled: Boolean, onOpen: (Destination) -> Unit) {
+private fun DestinationRow(destination: Destination, onOpen: (Destination) -> Unit) {
     ListItem(
-        modifier = Modifier.alpha(if (enabled) 1f else 0.5f).clickable(enabled = enabled) { onOpen(destination) },
+        modifier = Modifier.clickable { onOpen(destination) },
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
         leadingContent = {
             Box(
@@ -66,7 +64,7 @@ private fun DestinationRow(destination: Destination, enabled: Boolean, onOpen: (
             }
         },
         headlineContent = { Text(destination.title) },
-        supportingContent = { Text(if (enabled) destination.summary else "${destination.summary} · built in milestone M${destination.milestone}") },
+        supportingContent = { Text(destination.summary) },
         trailingContent = { SymbolIcon("chevron_right", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
     )
 }

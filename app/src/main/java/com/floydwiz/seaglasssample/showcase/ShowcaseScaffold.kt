@@ -74,7 +74,7 @@ fun ShowcaseScaffold(
             content = content,
         )
         if (fullBleed) FloatingControlLens({ showControls = true }, controlsTop, Modifier.align(Alignment.TopEnd))
-        if (controls.fpsOverlay) FpsOverlay(Modifier.align(Alignment.TopStart).statusBarsPadding().padding(start = 8.dp, top = if (fullBleed) 4.dp else 64.dp))
+        if (controls.fpsOverlay) FpsOverlay(Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = if (fullBleed) 8.dp else 64.dp))
     }
     if (showControls) ControlSheet(controls) { showControls = false }
 }

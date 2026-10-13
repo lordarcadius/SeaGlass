@@ -32,12 +32,12 @@ internal val LocalBackdropSampler = staticCompositionLocalOf<BackdropSampler?> {
 
 private const val SampleShrink = 8
 private const val SampleIntervalMillis = 300L
-private const val BrightPercentile = 0.75f
+private const val BrightPercentile = 0.95f
 
 /**
  * Measures how bright the backdrop is under floating glass.
  * - It captures the backdrop at 1/[SampleShrink] size, only while at least one adaptive surface is registered.
- * - Luminance is the WCAG relative luminance of each pixel; a surface reads the 75th percentile over its bounds.
+ * - Luminance is the WCAG relative luminance of each pixel; a surface reads the 95th percentile over its bounds, so a small bright patch under it still counts.
  * - It re-captures only after the backdrop drew again, at most every 300 ms.
  */
 @Stable
@@ -129,12 +129,12 @@ internal class Adaptive(val amount: Float, val sample: AdaptiveSample?, val boun
 /**
  * How much protective tint a floating surface needs, 0..1, in steps of 0.25.
  * - Zero unless [requested] or [LocalAdaptiveTint] is set and the surface sits over a [GlassBackdrop].
- * - Fades in above a luminance of 0.4 and is fully on at 0.55, measured after the finish's own brightness [lift] on the
- *   backdrop; the value is smoothed so scrolling content does not make it flicker.
+ * - Fades in above a luminance of 0.4 and is fully on at 0.55, measured after the finish's own brightness [lift] and
+ *   white fill [add] on the backdrop; the value is smoothed so scrolling content does not make it flicker.
  * - The returned modifier reports the surface bounds and must be applied to it.
  */
 @Composable
-internal fun rememberAdaptive(requested: Boolean, lift: Float): Adaptive {
+internal fun rememberAdaptive(requested: Boolean, lift: Float, add: Float): Adaptive {
     val sampler = LocalBackdropSampler.current
     val participates = (requested || LocalAdaptiveTint.current) && sampler != null
     var bounds by remember { mutableStateOf<Rect?>(null) }
@@ -150,12 +150,12 @@ internal fun rememberAdaptive(requested: Boolean, lift: Float): Adaptive {
             if (participates && box != null) sampler!!.run { version; luminanceIn(box) } else null
         }
     }
-    val target = luminance?.let { ((it * lift - 0.4f) / 0.15f).coerceIn(0f, 1f) } ?: 0f
+    val target = luminance?.let { ((it * lift + add - 0.4f) / 0.15f).coerceIn(0f, 1f) } ?: 0f
     val smooth by animateFloatAsState(target, tween(400), label = "adaptiveTint")
     val amount = (smooth * 4f).roundToInt() / 4f
     return Adaptive(
         amount,
-        luminance?.let { AdaptiveSample(it, (it * lift).coerceAtMost(1f), amount) },
+        luminance?.let { AdaptiveSample(it, (it * lift + add).coerceAtMost(1f), amount) },
         if (participates) Modifier.onGloballyPositioned { bounds = it.boundsInWindow() } else Modifier,
     )
 }
