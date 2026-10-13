@@ -1,4 +1,4 @@
-package dev.seaglass.color
+package com.floydwiz.seaglass.color
 
 import androidx.compose.ui.graphics.Color
 
