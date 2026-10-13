@@ -67,3 +67,39 @@ Each milestone ends with something you can run and look at. Milestone 1 is a go/
 
 > Implement spec section 9: medium and high contrast (read UiModeManager.getContrast() on API 34+, plus the control sheet override), reduce transparency (control sheet, and automatic when cross-window blur is off or below API 31), adaptive tint by sampling backdrop luminance under floating glass, and the audit rules (placeholders, symbols on photos, liquid tone, well lip). Then verify: capture every screen in every mode and theme with adb, check text and icon contrast on the captures (4.5:1 text, 3:1 icons and state indicators, measured against the pixels behind), and add a Macrobenchmark that scrolls the photo library with glass on.
 > Acceptance: a short report in docs/seaglass/verification.md with the measured results and any failures fixed or explained.
+
+## M9 — Showcase labs
+
+> Read docs/seaglass/showcase.md. Build the showcase areas around the components from M2–M8:
+> - Home: full-bleed photo hero with a clear glass entry card per area (adaptive tint on), and the `ShowcaseScaffold` that wraps every route.
+> - Floating control sheet on every page: theme, contrast, reduce transparency, dynamic colour, seed role, the eight layer toggles and an FPS overlay (JankStats), backed by one persisted `ControlState`.
+> - Materials lab: all eleven finishes over a switchable backdrop (photo, gradient, text, solid) with sliders for blur, tint, grain, light, rim and shadow, plus a toggle per layer scoped to the stage.
+> - Motion lab: promote the M6 page so every choreography in spec section 6 has its own card with Replay, and add the slow-motion toggle (`LocalMotionScale`).
+> - Accessibility lab: the Inbox screen in Standard / Medium / High / Reduce transparency at once, plus adaptive tint over bright and dark content with the sampled luminance shown.
+> Acceptance: every lab is reachable from Home; each slider and toggle changes the stage live; the control sheet opens on every route; slow motion visibly slows each choreography; the four accessibility modes render side by side.
+
+## M10 — Demos part 1
+
+> Read docs/seaglass/demos.md. Build the Gallery, Todo and File manager demos as working flows using only `:seaglass` components, with made-up content and the bundled photo and generated gradients for imagery:
+> - Gallery: albums grid, photo grid with Years / Months / Days / All, full-screen viewer with floating clear toolbar and info sheet, multi-select with clear toolbar, Memories carousel.
+> - Todo: lists in a tab bar (rail on tablet), tasks on milk with check pebbles, swipe to complete or delete, filter chips, add-task sheet with text field, date picker and priority segmented control, progress ring per list, extended FAB with menu.
+> - File manager: storage overview with ring and liquid bars, breadcrumb scope bar, list / grid segmented control, file rows with glass type tiles, multi-select toolbar, context menu, search with filter chips, empty state.
+> - Add the Demos list under Home and an "About this demo" sheet per demo.
+> Acceptance: each demo's flows work end to end in light and dark on a phone, Todo uses the rail on a tablet, and none puts glass on glass.
+
+## M11 — Demos part 2
+
+> Read docs/seaglass/demos.md. Build the Music player, Weather, Smart home and Notes demos:
+> - Music player: library, now playing over blurred album art with pill progress slider, clear transport lenses and glass play FAB, volume pill, mini player as the tab bar accessory.
+> - Weather: full-bleed sky gradient that changes with conditions, clear overlay cards, hourly carousel, daily list on milk, time scrubber pill slider.
+> - Smart home: rooms as scope tabs, device tiles with switches and vertical pill sliders, scene picker, ink toast on each change.
+> - Notes: inset list, editor with a floating clear format cluster, checklist items, share sheet.
+> Acceptance: each demo's flows work end to end in light and dark; the mini player moves between expanded and minimized tab bar states; weather changes with the conditions switcher.
+
+## M12 — Polish and final verification
+
+> - Run `/sg-check` over every route and demo in light and dark, in all four accessibility modes, on phone and tablet where a device is available; fix visible differences from the spec.
+> - Confirm every component has light and dark previews, no component hardcodes a colour, and every approximation is labelled in the UI.
+> - Re-run the Macrobenchmark and the contrast checks from M8 across the new screens and demos; add any new failures and fixes to docs/seaglass/verification.md.
+> - Update docs/seaglass/progress.md with a final summary: what exists, what was verified on a device, what was not, known gaps.
+> Acceptance: `./gradlew :seaglass:compileDebugKotlin :app:assembleDebug` passes; verification.md covers the new areas; progress.md ends with the final summary.
