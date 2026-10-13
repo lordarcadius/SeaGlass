@@ -1,5 +1,9 @@
 package com.floydwiz.seaglass.material
 
+import kotlin.math.roundToInt
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.ui.graphics.Color
@@ -104,18 +108,26 @@ object SeaGlassTokens {
     }
 
     object Motion {
-        val SpatialFast = SpringSpec<Float>(dampingRatio = 0.6f, stiffness = 800f)
-        val SpatialDefault = SpringSpec<Float>(dampingRatio = 0.8f, stiffness = 380f)
-        val SpatialSlow = SpringSpec<Float>(dampingRatio = 0.8f, stiffness = 200f)
-        val EffectsFast = SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 3800f)
-        val EffectsDefault = SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)
-        val EffectsSlow = SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 800f)
+        /** Multiplier on every duration, for slow-motion demonstrations: springs get their stiffness divided by its square. */
+        var slowdown by mutableFloatStateOf(1f)
 
-        fun <T> spatialFast() = SpringSpec<T>(dampingRatio = 0.6f, stiffness = 800f)
-        fun <T> spatialDefault() = SpringSpec<T>(dampingRatio = 0.8f, stiffness = 380f)
-        fun <T> spatialSlow() = SpringSpec<T>(dampingRatio = 0.8f, stiffness = 200f)
-        fun <T> effectsFast() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 3800f)
-        fun <T> effectsDefault() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 1600f)
-        fun <T> effectsSlow() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = 800f)
+        val SpatialFast: SpringSpec<Float> get() = spatialFast()
+        val SpatialDefault: SpringSpec<Float> get() = spatialDefault()
+        val SpatialSlow: SpringSpec<Float> get() = spatialSlow()
+        val EffectsFast: SpringSpec<Float> get() = effectsFast()
+        val EffectsDefault: SpringSpec<Float> get() = effectsDefault()
+        val EffectsSlow: SpringSpec<Float> get() = effectsSlow()
+
+        private fun stiffness(base: Float) = base / (slowdown * slowdown)
+
+        fun <T> spatialFast() = SpringSpec<T>(dampingRatio = 0.6f, stiffness = stiffness(800f))
+        fun <T> spatialDefault() = SpringSpec<T>(dampingRatio = 0.8f, stiffness = stiffness(380f))
+        fun <T> spatialSlow() = SpringSpec<T>(dampingRatio = 0.8f, stiffness = stiffness(200f))
+        fun <T> effectsFast() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = stiffness(3800f))
+        fun <T> effectsDefault() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = stiffness(1600f))
+        fun <T> effectsSlow() = SpringSpec<T>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = stiffness(800f))
+
+        /** A timed duration stretched by [slowdown]. */
+        fun millis(base: Int): Int = (base * slowdown).roundToInt()
     }
 }

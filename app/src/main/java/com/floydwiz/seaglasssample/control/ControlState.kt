@@ -22,6 +22,7 @@ class ControlState(
     seedRole: GlassRole = GlassRole.Aqua,
     layers: GlassLayers = GlassLayers.All,
     autoReduceTransparency: Boolean = true,
+    fpsOverlay: Boolean = false,
 ) {
     var themeMode by mutableStateOf(themeMode)
 
@@ -35,6 +36,9 @@ class ControlState(
     var seedRole by mutableStateOf(seedRole)
     var layers by mutableStateOf(layers)
 
+    /** JankStats readout pinned top-left. */
+    var fpsOverlay by mutableStateOf(fpsOverlay)
+
     var systemContrast by mutableStateOf(SeaGlassContrast.Standard)
     var blurEnabled by mutableStateOf(true)
 
@@ -46,7 +50,7 @@ class ControlState(
             save = { listOf(
                     it.themeMode.name, it.contrast?.name ?: SystemContrast, it.reduceTransparency, it.dynamicColor, it.seedRole.name,
                     it.layers.shadow, it.layers.caustic, it.layers.contact, it.layers.body,
-                    it.layers.light, it.layers.grain, it.layers.volume, it.layers.rim, it.autoReduceTransparency,
+                    it.layers.light, it.layers.grain, it.layers.volume, it.layers.rim, it.autoReduceTransparency, it.fpsOverlay,
                 )
             },
             restore = {
@@ -62,6 +66,7 @@ class ControlState(
                         volume = it[11] as Boolean, rim = it[12] as Boolean,
                     ),
                     autoReduceTransparency = it[13] as Boolean,
+                    fpsOverlay = it[14] as Boolean,
                 )
             },
         )

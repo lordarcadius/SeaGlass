@@ -1,5 +1,7 @@
 package com.floydwiz.seaglass.components.containers
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +37,7 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 fun GlassMenu(modifier: Modifier = Modifier, width: androidx.compose.ui.unit.Dp = 214.dp, content: @Composable ColumnScope.() -> Unit) {
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier.width(width),
+        modifier = modifier.width(width).background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(24.dp)),
         shape = SeaGlassShape.Pane(24.dp),
         contentAlignment = Alignment.TopStart,
     ) {

@@ -1,5 +1,7 @@
 package com.floydwiz.seaglass.components.containers
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,7 +53,7 @@ fun GlassAlertPane(
     val ink = if (LocalSeaGlassDark.current) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier.width(320.dp),
+        modifier = modifier.width(320.dp).background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(34.dp)),
         shape = SeaGlassShape.Pane(34.dp),
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopCenter,

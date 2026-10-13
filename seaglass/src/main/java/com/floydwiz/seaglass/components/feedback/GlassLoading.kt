@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
+import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.shape.SeaGlassShape
@@ -48,10 +49,10 @@ fun GlassLoadingIndicator(
         initialValue = 0f, targetValue = 3f,
         animationSpec = infiniteRepeatable(
             keyframes {
-                durationMillis = 2400
+                durationMillis = SeaGlassTokens.Motion.millis(2400)
                 0f at 0 using MorphEasing
-                1f at 792 using MorphEasing
-                2f at 1584 using MorphEasing
+                1f at SeaGlassTokens.Motion.millis(792) using MorphEasing
+                2f at SeaGlassTokens.Motion.millis(1584) using MorphEasing
             },
             RepeatMode.Reverse,
         ),
@@ -89,12 +90,12 @@ fun GlassBeadsLoading(modifier: Modifier = Modifier, role: TonalTones = LocalGla
                 initialValue = 0f, targetValue = 0f,
                 animationSpec = infiniteRepeatable(
                     keyframes {
-                        durationMillis = 1100
+                        durationMillis = SeaGlassTokens.Motion.millis(1100)
                         0f at 0 using MorphEasing
-                        -7f at 550 using MorphEasing
-                        0f at 1100
+                        -7f at SeaGlassTokens.Motion.millis(550) using MorphEasing
+                        0f at SeaGlassTokens.Motion.millis(1100)
                     },
-                    initialStartOffset = StartOffset(delayMillis, StartOffsetType.FastForward),
+                    initialStartOffset = StartOffset(SeaGlassTokens.Motion.millis(delayMillis), StartOffsetType.FastForward),
                 ),
                 label = "bead",
             )

@@ -121,7 +121,10 @@ internal fun BackdropSampler.captureModifier(): Modifier {
         }
 }
 
-internal class Adaptive(val amount: Float, val boundsModifier: Modifier)
+/** The luminance a floating surface sampled behind it, after the finish's brightness [lifted], and the tint [amount] it chose. */
+class AdaptiveSample(val luminance: Float, val lifted: Float, val amount: Float)
+
+internal class Adaptive(val amount: Float, val sample: AdaptiveSample?, val boundsModifier: Modifier)
 
 /**
  * How much protective tint a floating surface needs, 0..1, in steps of 0.25.
@@ -141,16 +144,18 @@ internal fun rememberAdaptive(requested: Boolean, lift: Float): Adaptive {
             onDispose { sampler.consumers-- }
         }
     }
-    val target by remember(sampler, participates) {
+    val luminance by remember(sampler, participates) {
         derivedStateOf {
             val box = bounds
-            val lum = if (participates && box != null) sampler!!.run { version; luminanceIn(box) } else null
-            if (lum == null) 0f else ((lum * lift - 0.4f) / 0.15f).coerceIn(0f, 1f)
+            if (participates && box != null) sampler!!.run { version; luminanceIn(box) } else null
         }
     }
+    val target = luminance?.let { ((it * lift - 0.4f) / 0.15f).coerceIn(0f, 1f) } ?: 0f
     val smooth by animateFloatAsState(target, tween(400), label = "adaptiveTint")
+    val amount = (smooth * 4f).roundToInt() / 4f
     return Adaptive(
-        (smooth * 4f).roundToInt() / 4f,
+        amount,
+        luminance?.let { AdaptiveSample(it, (it * lift).coerceAtMost(1f), amount) },
         if (participates) Modifier.onGloballyPositioned { bounds = it.boundsInWindow() } else Modifier,
     )
 }

@@ -1,41 +1,45 @@
 package com.floydwiz.seaglasssample.control
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
+import com.floydwiz.seaglass.components.containers.GlassBottomSheet
+import com.floydwiz.seaglass.components.selection.GlassFilterChip
+import com.floydwiz.seaglass.components.selection.GlassSegmentedControl
+import com.floydwiz.seaglass.components.selection.GlassSwitch
+import com.floydwiz.seaglass.components.selection.SegmentedOption
+import com.floydwiz.seaglass.material.glassOnSurfaceVariant
 import com.floydwiz.seaglass.theme.SeaGlassContrast
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** The control sheet: a milk bottom sheet whose changes apply live to the page behind it. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState()) {
+    GlassBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
+                .padding(top = 8.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            Text("Controls", style = MaterialTheme.typography.titleLarge)
+            Text("Controls", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight(700))
 
             Section("Theme") {
                 Segmented(ThemeMode.entries, state.themeMode, { it.label }) { state.themeMode = it }
@@ -47,17 +51,9 @@ fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
             SwitchRow("Reduce when system blur is off", state.autoReduceTransparency) { state.autoReduceTransparency = it }
             SwitchRow("Dynamic colour", state.dynamicColor) { state.dynamicColor = it }
             Section("Seed role") {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    GlassRole.entries.chunked(4).forEach { row ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            row.forEach { role ->
-                                FilterChip(
-                                    selected = state.seedRole == role,
-                                    onClick = { state.seedRole = role },
-                                    label = { Text(role.label) },
-                                )
-                            }
-                        }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GlassRole.entries.forEach { role ->
+                        GlassFilterChip(state.seedRole == role, { state.seedRole = role }, role.label)
                     }
                 }
             }
@@ -74,6 +70,11 @@ fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
                     SwitchRow("Rim", layers.rim) { state.layers = layers.copy(rim = it) }
                 }
             }
+            SwitchRow("FPS overlay (debug)", state.fpsOverlay) { state.fpsOverlay = it }
+            Text(
+                "Layers and the FPS overlay are debugging aids: the overlay reads JankStats frame durations, which include GPU time on API 31 and later.",
+                color = glassOnSurfaceVariant(), fontSize = 12.5.sp, lineHeight = 18.sp,
+            )
         }
     }
 }
@@ -81,32 +82,25 @@ fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(title, color = glassOnSurfaceVariant(), fontSize = 13.sp, fontWeight = FontWeight(650))
         content()
     }
 }
 
 @Composable
 private fun <T> Segmented(options: List<T>, selected: T, label: (T) -> String, onSelect: (T) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, option ->
-            SegmentedButton(
-                selected = option == selected,
-                onClick = { onSelect(option) },
-                shape = SegmentedButtonDefaults.itemShape(index, options.size),
-            ) { Text(label(option)) }
-        }
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        GlassSegmentedControl(
+            options.map { SegmentedOption(label(it)) }, options.indexOf(selected).coerceAtLeast(0), { onSelect(options[it]) },
+            segmentWidth = (maxWidth - 8.dp) / options.size,
+        )
     }
 }
 
 @Composable
 private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = checked, onCheckedChange = onChange)
+        GlassSwitch(checked, onChange)
     }
 }

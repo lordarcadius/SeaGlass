@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
  * - Provides [LocalContentColor] for the finish, at 38% when disabled.
  * - With [onClick] set it is hoverable, focusable and pressable, and drives the state model.
  * - A Lens draws its backdrop in a separate layer so only the backdrop is magnified.
+ * - [onAdaptiveSample] reports the luminance sampled for adaptive tint, for inspection.
  */
 @Composable
 fun GlassSurface(
@@ -41,12 +43,16 @@ fun GlassSurface(
     pressScale: Float = SeaGlassTokens.State.Press.Scale,
     contentColor: Color? = null,
     contentAlignment: Alignment = Alignment.Center,
+    onAdaptiveSample: ((AdaptiveSample) -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val interaction = rememberGlassInteraction(finish, enabled, source, reactsTo, pressScale)
     val dark = LocalSeaGlassDark.current
     val adaptiveTint = rememberAdaptive(adaptive, if (dark) darkBrightnessLift(finish) else 1f)
+    if (onAdaptiveSample != null) {
+        LaunchedEffect(adaptiveTint.sample?.luminance, adaptiveTint.amount) { adaptiveTint.sample?.let(onAdaptiveSample) }
+    }
     val resolvedContent = when {
         interaction.disabled -> disabledContentColor(dark)
         contentColor != null -> contentColor

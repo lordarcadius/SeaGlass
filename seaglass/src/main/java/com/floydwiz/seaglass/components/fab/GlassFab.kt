@@ -139,7 +139,7 @@ fun GlassFabMenu(
         rise.forEachIndexed { index, animatable ->
             scope.launch {
                 if (expanded) {
-                    if (motion) delay((index * 40L * motionScale).toLong())
+                    if (motion) delay((index * 40L * motionScale * SeaGlassTokens.Motion.slowdown).toLong())
                     animatable.animateTo(1f, SeaGlassTokens.Motion.spatialFast())
                 } else {
                     animatable.animateTo(0f, SeaGlassTokens.Motion.spatialFast())

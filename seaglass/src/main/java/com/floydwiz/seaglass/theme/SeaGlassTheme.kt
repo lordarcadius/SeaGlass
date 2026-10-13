@@ -24,6 +24,7 @@ import com.floydwiz.seaglass.material.LocalGlassLayers
 import com.floydwiz.seaglass.material.LocalClockOwned
 import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.material.LocalMotionScale
+import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.rememberAnimatorScale
 import com.floydwiz.seaglass.material.rememberGlassClock
 
@@ -60,7 +61,7 @@ fun SeaGlassTheme(
     val clockOwned = LocalClockOwned.current
     val motionScale = if (clockOwned) LocalMotionScale.current else rememberAnimatorScale()
     val motionEnabled = motionScale > 0f
-    val clock = if (clockOwned) LocalGlassClock.current else rememberGlassClock(running = motionEnabled && layers.light, motionScale = motionScale)
+    val clock = if (clockOwned) LocalGlassClock.current else rememberGlassClock(running = motionEnabled && layers.light, motionScale = motionScale * SeaGlassTokens.Motion.slowdown)
 
     CompositionLocalProvider(
         LocalGlassLayers provides layers,

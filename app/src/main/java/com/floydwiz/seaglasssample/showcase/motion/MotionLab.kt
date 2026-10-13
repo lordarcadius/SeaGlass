@@ -1,4 +1,4 @@
-package com.floydwiz.seaglasssample.showcase.catalogue.c8
+package com.floydwiz.seaglasssample.showcase.motion
 
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -15,7 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,7 +51,9 @@ import com.floydwiz.seaglass.material.GlassState
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalForcedGlassState
 import com.floydwiz.seaglass.material.LocalMotionEnabled
+import com.floydwiz.seaglass.material.GlassClockScope
 import com.floydwiz.seaglass.material.LocalMotionScale
+import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglasssample.showcase.catalogue.CatalogueScreen
 import com.floydwiz.seaglasssample.showcase.catalogue.CatalogueSection
@@ -61,17 +65,32 @@ private val Tabs = listOf(TabItem("photo_library", "Photos"), TabItem("collectio
 private val Segments = listOf("Years", "Months", "Days", "All").map { SegmentedOption(it) }
 
 @Composable
-fun MotionPage(contentPadding: PaddingValues) {
+fun MotionLab(contentPadding: PaddingValues) {
     CatalogueScreen(contentPadding, statePicker = false) {
         val scale = LocalMotionScale.current
+        var slow by remember { mutableStateOf(false) }
+        DisposableEffect(slow) {
+            SeaGlassTokens.Motion.slowdown = if (slow) 4f else 1f
+            onDispose { SeaGlassTokens.Motion.slowdown = 1f }
+        }
         CatalogueSection(
             "Animation settings", "ANIMATOR_DURATION_SCALE",
-            "Every choreography follows the system animator duration scale, live: at ×0 loops and morphs stop and changes are instant, above ×1 they slow down. Change it in developer options and come back; nothing needs a restart.",
+            "Every choreography follows the system animator duration scale, live: at ×0 loops and morphs stop and changes are instant, above ×1 they slow down. Slow motion below stretches every duration here by four, springs included, while this page is open.",
         ) {
             Text(
-                "Animator scale ×${"%.1f".format(scale)} · ${if (LocalMotionEnabled.current) "animations on" else "animations off"}",
+                "System animator scale ×${"%.1f".format(scale)} · ${if (LocalMotionEnabled.current) "animations on" else "animations off"}",
                 style = MaterialTheme.typography.titleMedium,
             )
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                Text("Slow motion (×4)", style = MaterialTheme.typography.bodyLarge)
+                GlassSwitch(slow, { slow = it })
+            }
+            if (!LocalMotionEnabled.current) {
+                Text(
+                    "Animations are off in system settings, so loops are stopped and changes are instant. The cards below show the reduced version.",
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         CatalogueSection(
@@ -238,18 +257,58 @@ fun MotionPage(contentPadding: PaddingValues) {
         }
 
         CatalogueSection(
-            "Loops", "Morph 2.4 s · comet 1.2 s · beads 1.1 s · sweep 1.8 s · drift 8 s",
-            "These run continuously. The loading pebble tumbles through lens, shard, egg and tumble with each interval eased on its own; the light inside every glass surface drifts ±5% by ±3% on an 8 s alternate. With animations off they all hold still.",
+            "Loading morph", "2.4 s alternate · each interval eased",
+            "The loading pebble tumbles through lens, shard, egg and tumble; Replay starts the loop again from the lens. With animations off it holds the lens shape.",
         ) {
             ThemePanels {
-                Row(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalAlignment = Alignment.CenterVertically) {
-                    GlassLoadingIndicator()
-                    GlassLoadingIndicator(contained = true)
-                    GlassBeadsLoading()
-                    GlassRingProgress(null)
+                Stage { replay ->
+                    key(replay) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
+                            GlassLoadingIndicator()
+                            GlassLoadingIndicator(contained = true)
+                        }
+                    }
                 }
-                GlassLinearProgress(null, Modifier.fillMaxWidth())
-                GlassSurface(GlassFinish.Glass, Modifier.size(200.dp, 64.dp), SeaGlassShape.Capsule, reactsTo = emptySet())
+            }
+        }
+
+        CatalogueSection(
+            "Comet and bead bob", "Comet 1.2 s linear · beads 1.1 s with −0.75 s and −0.4 s phases",
+            "The comet is a glass arc that fades to nothing at its tail; the three beads bob in sequence for inline waits.",
+        ) {
+            ThemePanels {
+                Stage { replay ->
+                    key(replay) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
+                            GlassRingProgress(null)
+                            GlassBeadsLoading()
+                        }
+                    }
+                }
+            }
+        }
+
+        CatalogueSection(
+            "Indeterminate progress", "1.8 s sweep",
+            "The liquid segment sweeps across the well, clipped by a moving window.",
+        ) {
+            ThemePanels {
+                Stage { replay -> key(replay) { GlassLinearProgress(null, Modifier.fillMaxWidth()) } }
+            }
+        }
+
+        CatalogueSection(
+            "Light drift", "8 s alternate · ±5% by ±3%",
+            "The light pool inside every glass surface drifts on a shared clock; Replay gives this card a clock that starts again at zero.",
+        ) {
+            ThemePanels { dark ->
+                Stage { replay ->
+                    GlassClockScope(replay) {
+                        PhotoStrip(dark, 384.dp, 132.dp, crop = 7) {
+                            GlassSurface(GlassFinish.Glass, Modifier.offset(40.dp, 30.dp).size(240.dp, 72.dp), SeaGlassShape.Capsule, reactsTo = emptySet())
+                        }
+                    }
+                }
             }
         }
     }

@@ -177,8 +177,9 @@ internal fun Modifier.seaGlass(
     val grain = rememberGrainBrush()
 
     val finish = interaction.finish
-    val context = remember(dark, contrast, reduceTransparency, role, adaptive, tinted) {
-        GlassContext(dark, contrast, reduceTransparency, role, adaptive, tinted)
+    val overrides = LocalGlassOverrides.current
+    val context = remember(dark, contrast, reduceTransparency, role, adaptive, tinted, overrides) {
+        GlassContext(dark, contrast, reduceTransparency, role, adaptive, tinted, overrides)
     }
     val body = remember(finish, context) { GlassRecipes.body(finish, context) }
     val hazeStyle = remember(body) { (body as? Body.Backdrop)?.toHazeStyle() }

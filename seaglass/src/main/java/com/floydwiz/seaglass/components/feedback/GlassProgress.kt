@@ -65,11 +65,11 @@ fun GlassLinearProgress(
     val transition = rememberInfiniteTransition(label = "linearProgress")
     val left by transition.animateFloat(
         0f, 1f,
-        infiniteRepeatable(keyframes { durationMillis = 1800; 0f at 0 using SweepEasing; 0.08f at 810 using SweepEasing; 1f at 1800 }), label = "left",
+        infiniteRepeatable(keyframes { durationMillis = SeaGlassTokens.Motion.millis(1800); 0f at 0 using SweepEasing; 0.08f at SeaGlassTokens.Motion.millis(810) using SweepEasing; 1f at SeaGlassTokens.Motion.millis(1800) }), label = "left",
     )
     val right by transition.animateFloat(
         0f, 1f,
-        infiniteRepeatable(keyframes { durationMillis = 1800; 0f at 0 using SweepEasing; 0.7f at 810 using SweepEasing; 1f at 1800 }), label = "right",
+        infiniteRepeatable(keyframes { durationMillis = SeaGlassTokens.Motion.millis(1800); 0f at 0 using SweepEasing; 0.7f at SeaGlassTokens.Motion.millis(810) using SweepEasing; 1f at SeaGlassTokens.Motion.millis(1800) }), label = "right",
     )
     val semantics = Modifier.semantics { if (progress != null) progressBarRangeInfo = ProgressBarRangeInfo(progress, 0f..1f) }
     BoxWithConstraints(modifier.fillMaxWidth().height(height).then(semantics)) {
@@ -145,7 +145,7 @@ fun GlassRingProgress(
     val to = if (dark) role[80] else role[70]
     val track = if (dark) rgba(0, 0, 0, 0.42f) else rgba(22, 38, 48, 0.12f)
     val spin by rememberInfiniteTransition(label = "ring").animateFloat(
-        0f, 360f, infiniteRepeatable(tween(1200, easing = LinearEasing)), label = "spin",
+        0f, 360f, infiniteRepeatable(tween(SeaGlassTokens.Motion.millis(1200), easing = LinearEasing)), label = "spin",
     )
     Box(modifier.size(size).semantics { if (progress != null) progressBarRangeInfo = ProgressBarRangeInfo(progress, 0f..1f) }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) {

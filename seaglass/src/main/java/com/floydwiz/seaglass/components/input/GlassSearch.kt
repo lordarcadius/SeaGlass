@@ -273,7 +273,7 @@ private fun ListeningBar(role: TonalTones, onStop: () -> Unit) {
     val transition = rememberInfiniteTransition(label = "waveform")
     val phase by transition.animateFloat(
         initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "wave",
+        animationSpec = infiniteRepeatable(tween(SeaGlassTokens.Motion.millis(900)), RepeatMode.Reverse), label = "wave",
     )
     GlassSurface(
         finish = GlassFinish.Glass,

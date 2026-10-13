@@ -16,18 +16,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 
+/** A list of destinations in titled sections; rows are disabled while [enabled] says the destination is not built yet. */
 @Composable
-fun CatalogueHome(contentPadding: PaddingValues, onOpen: (Destination) -> Unit) {
+fun DestinationList(
+    contentPadding: PaddingValues,
+    sections: List<Pair<String, List<Destination>>>,
+    onOpen: (Destination) -> Unit,
+    enabled: (Destination) -> Boolean = { true },
+) {
     LazyColumn(contentPadding = contentPadding) {
-        item { SectionHeader("Prototype") }
-        item { DestinationRow(Destinations.spike, onOpen) }
-        item { SectionHeader("Components") }
-        items(Destinations.components) { DestinationRow(it, onOpen) }
-        item { SectionHeader("Screens") }
-        items(Destinations.screens) { DestinationRow(it, onOpen) }
+        sections.forEach { (title, destinations) ->
+            item { SectionHeader(title) }
+            items(destinations) { DestinationRow(it, enabled(it), onOpen) }
+        }
     }
 }
 
@@ -42,9 +47,9 @@ private fun SectionHeader(title: String) {
 }
 
 @Composable
-private fun DestinationRow(destination: Destination, onOpen: (Destination) -> Unit) {
+private fun DestinationRow(destination: Destination, enabled: Boolean, onOpen: (Destination) -> Unit) {
     ListItem(
-        modifier = Modifier.clickable { onOpen(destination) },
+        modifier = Modifier.alpha(if (enabled) 1f else 0.5f).clickable(enabled = enabled) { onOpen(destination) },
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
         leadingContent = {
             Box(
@@ -61,7 +66,7 @@ private fun DestinationRow(destination: Destination, onOpen: (Destination) -> Un
             }
         },
         headlineContent = { Text(destination.title) },
-        supportingContent = { Text(destination.summary) },
+        supportingContent = { Text(if (enabled) destination.summary else "${destination.summary} · built in milestone M${destination.milestone}") },
         trailingContent = { SymbolIcon("chevron_right", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
     )
 }

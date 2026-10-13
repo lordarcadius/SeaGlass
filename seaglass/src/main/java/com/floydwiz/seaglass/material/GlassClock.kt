@@ -5,6 +5,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -27,14 +28,26 @@ internal fun rememberGlassClock(running: Boolean, motionScale: Float): GlassCloc
     val clock = remember { GlassClock() }
     LaunchedEffect(running, motionScale) {
         if (running) {
+            var start = -1L
             while (true) {
                 androidx.compose.runtime.withFrameNanos { nanos ->
-                    clock.seconds = ((nanos / 1_000_000f / motionScale) % 16_000f) / 1000f
+                    if (start < 0) start = nanos
+                    clock.seconds = (((nanos - start) / 1_000_000f / motionScale) % 16_000f) / 1000f
                 }
             }
         }
     }
     return clock
+}
+
+/** Gives the glass below its own drift clock, which starts again at zero whenever [key] changes. */
+@Composable
+fun GlassClockScope(key: Any?, content: @Composable () -> Unit) {
+    key(key) {
+        val scale = LocalMotionScale.current * SeaGlassTokens.Motion.slowdown
+        val clock = rememberGlassClock(LocalMotionEnabled.current, scale)
+        androidx.compose.runtime.CompositionLocalProvider(LocalGlassClock provides clock, content = content)
+    }
 }
 
 private val DriftEasing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)

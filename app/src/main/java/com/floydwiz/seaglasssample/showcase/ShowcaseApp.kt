@@ -1,6 +1,10 @@
 package com.floydwiz.seaglasssample.showcase
 
 import androidx.compose.runtime.getValue
+import kotlinx.coroutines.flow.drop
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import android.graphics.Color
 import androidx.activity.ComponentActivity
@@ -11,23 +15,14 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
@@ -35,14 +30,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.theme.SeaGlassTheme
 import com.floydwiz.seaglass.theme.rememberCrossWindowBlurEnabled
 import com.floydwiz.seaglass.theme.rememberSystemContrast
-import com.floydwiz.seaglasssample.control.ControlSheet
 import com.floydwiz.seaglasssample.control.ControlState
 import com.floydwiz.seaglasssample.control.LocalControls
 import com.floydwiz.seaglasssample.control.ThemeMode
+import com.floydwiz.seaglasssample.control.writeControls
 import com.floydwiz.seaglasssample.control.rememberControlState
 import com.floydwiz.seaglasssample.showcase.catalogue.c0.LanguagePage
 import com.floydwiz.seaglasssample.showcase.catalogue.c1.ButtonsPage
@@ -52,7 +46,10 @@ import com.floydwiz.seaglasssample.showcase.catalogue.c4.NavigationPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c5.ContainersPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c6.FeedbackPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c7.FabsPage
-import com.floydwiz.seaglasssample.showcase.catalogue.c8.MotionPage
+import com.floydwiz.seaglasssample.showcase.motion.MotionLab
+import com.floydwiz.seaglasssample.showcase.a11y.AccessibilityLab
+import com.floydwiz.seaglasssample.showcase.home.HomeScreen
+import com.floydwiz.seaglasssample.showcase.materials.MaterialsLab
 import com.floydwiz.seaglasssample.showcase.screens.assistant.AssistantScreen
 import com.floydwiz.seaglasssample.showcase.screens.incall.InCallScreen
 import com.floydwiz.seaglasssample.showcase.screens.inbox.InboxScreen
@@ -76,8 +73,19 @@ private fun TabletMailStage() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: String? = null) {
+fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: String? = null, persist: Boolean = false) {
     val controls = rememberControlState(initialControls)
+    val context = LocalContext.current
+    if (persist) {
+        LaunchedEffect(controls) {
+            snapshotFlow {
+                listOf(
+                    controls.themeMode, controls.contrast, controls.reduceTransparency, controls.autoReduceTransparency,
+                    controls.dynamicColor, controls.seedRole, controls.layers, controls.fpsOverlay,
+                )
+            }.drop(1).collect { writeControls(context, controls) }
+        }
+    }
     val systemContrast = rememberSystemContrast()
     val blurEnabled = rememberCrossWindowBlurEnabled()
     SideEffect {
@@ -108,59 +116,51 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
         val navController = rememberNavController()
         val backStack by navController.currentBackStackEntryAsState()
         val route = backStack?.destination?.route
-        val current = Destinations.all.firstOrNull { it.route == route }
-        var showControls by remember { mutableStateOf(false) }
-        val fullBleed = route?.startsWith("screens/") == true
+        val fullBleed = route == Destinations.HOME || route?.startsWith("screens/") == true || route?.startsWith("demos/") == true
 
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentWindowInsets = if (fullBleed) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
-            topBar = {
-                if (!fullBleed) CenterAlignedTopAppBar(
-                    title = { Text(current?.title ?: "Sea Glass") },
-                    navigationIcon = {
-                        if (current != null) {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                SymbolIcon("arrow_back", contentDescription = "Back")
-                            }
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { showControls = true }) {
-                            SymbolIcon("tune", contentDescription = "Controls")
-                        }
-                    },
-                )
-            },
+        ShowcaseScaffold(
+            title = Destinations.titleOf(route),
+            onBack = if (route == null || route == Destinations.HOME) null else ({ navController.popBackStack() }),
+            fullBleed = fullBleed,
+            controlsTop = if (route == Destinations.HOME) 4.dp else 112.dp,
+            controls = controls,
         ) { padding ->
             CompositionLocalProvider(LocalControls provides controls) {
-            NavHost(navController, startDestination = startRoute ?: Destinations.CATALOGUE) {
-                composable(Destinations.CATALOGUE) {
-                    CatalogueHome(padding) { navController.navigate(it.route) }
+                NavHost(navController, startDestination = startRoute ?: Destinations.HOME) {
+                    composable(Destinations.HOME) { HomeScreen { navController.navigate(it.route) } }
+                    composable(Destinations.CATALOGUE) {
+                        DestinationList(padding, listOf("Prototype" to listOf(Destinations.spike), "Components" to Destinations.components), { navController.navigate(it.route) })
+                    }
+                    composable(Destinations.SCREENS) {
+                        DestinationList(padding, listOf("Screens" to Destinations.screens), { navController.navigate(it.route) })
+                    }
+                    composable(Destinations.DEMOS) {
+                        DestinationList(padding, listOf("Demos" to Destinations.demos), { navController.navigate(it.route) }, enabled = { it.route in BuiltDemos })
+                    }
+                    composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
+                    composable(Destinations.components[0].route) { LanguagePage(padding) }
+                    composable(Destinations.components[1].route) { ButtonsPage(padding) }
+                    composable(Destinations.components[2].route) { SelectionPage(padding) }
+                    composable(Destinations.components[3].route) { InputPage(padding) }
+                    composable(Destinations.components[4].route) { NavigationPage(padding) }
+                    composable(Destinations.components[5].route) { ContainersPage(padding) }
+                    composable(Destinations.components[6].route) { FeedbackPage(padding) }
+                    composable(Destinations.components[7].route) { FabsPage(padding) }
+                    composable(Destinations.MATERIALS) { MaterialsLab(padding) }
+                    composable(Destinations.A11Y) { AccessibilityLab(padding) }
+                    composable(Destinations.MOTION) { MotionLab(padding) }
+                    composable(Destinations.screens[0].route) { InCallScreen(onEnd = { navController.popBackStack() }) }
+                    composable(Destinations.screens[1].route) { LibraryScreen() }
+                    composable(Destinations.screens[2].route) {
+                        if (LocalConfiguration.current.screenWidthDp >= ExpandedWidthDp) TabletMailScreen() else InboxScreen()
+                    }
+                    composable(Destinations.screens[3].route) { AssistantScreen() }
+                    composable(Destinations.screens[4].route) { SettingsScreen(onBack = { navController.popBackStack() }) }
+                    composable(Destinations.screens[5].route) { TabletMailStage() }
                 }
-                composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
-                composable(Destinations.components[0].route) { LanguagePage(padding) }
-                composable(Destinations.components[1].route) { ButtonsPage(padding) }
-                composable(Destinations.components[2].route) { SelectionPage(padding) }
-                composable(Destinations.components[3].route) { InputPage(padding) }
-                composable(Destinations.components[4].route) { NavigationPage(padding) }
-                composable(Destinations.components[5].route) { ContainersPage(padding) }
-                composable(Destinations.components[6].route) { FeedbackPage(padding) }
-                composable(Destinations.components[7].route) { FabsPage(padding) }
-                composable(Destinations.components[8].route) { MotionPage(padding) }
-                composable(Destinations.screens[0].route) { InCallScreen(onEnd = { navController.popBackStack() }) }
-                composable(Destinations.screens[1].route) { LibraryScreen() }
-                composable(Destinations.screens[2].route) {
-                    if (LocalConfiguration.current.screenWidthDp >= ExpandedWidthDp) TabletMailScreen() else InboxScreen()
-                }
-                composable(Destinations.screens[3].route) { AssistantScreen() }
-                composable(Destinations.screens[4].route) { SettingsScreen(onBack = { navController.popBackStack() }) }
-                composable(Destinations.screens[5].route) { TabletMailStage() }
-            }
             }
         }
-
-        if (showControls) ControlSheet(controls) { showControls = false }
     }
 }
+
+private val BuiltDemos = emptySet<String>()

@@ -19,11 +19,12 @@ internal class GlassContext(
     val role: TonalTones,
     val adaptive: Float,
     val tinted: Boolean,
+    val overrides: GlassOverrides = GlassOverrides.None,
 ) {
     val level get() = contrast.ordinal
-    val tintBoost get() = SeaGlassTokens.Contrast.TintBoost[level]
+    val tintBoost get() = SeaGlassTokens.Contrast.TintBoost[level] + overrides.tintDelta
     val transmission get() = SeaGlassTokens.Contrast.TransmissionScale[level]
-    val lightScale get() = SeaGlassTokens.Contrast.LightScale[level]
+    val lightScale get() = SeaGlassTokens.Contrast.LightScale[level] * overrides.lightScale
 
     /** Transmission glow colour at the bottom of lit glass. */
     val glow: Color
@@ -107,6 +108,12 @@ internal object GlassRecipes {
     private fun r1(v: Float) = round1(v)
 
     fun body(finish: GlassFinish, c: GlassContext): Body {
+        val body = baseBody(finish, c)
+        val blur = c.overrides.blurDp
+        return if (blur != null && body is Body.Backdrop) Body.Backdrop(blur, body.saturation, body.brightness, body.fills) else body
+    }
+
+    private fun baseBody(finish: GlassFinish, c: GlassContext): Body {
         if (c.reduceTransparency) return Body.Solid(reduceTransparencyFill(finish, c))
         val p = c.role
         val dark = c.dark
@@ -318,6 +325,24 @@ internal object GlassRecipes {
     }
 
     fun layers(finish: GlassFinish, c: GlassContext, w: Float, h: Float): LayerSpec {
+        val spec = baseLayers(finish, c, w, h)
+        val o = c.overrides
+        if (o.grain == null && o.rimScale == 1f && o.shadowScale == 1f) return spec
+        fun Color.scaled(k: Float) = copy(alpha = (alpha * k).coerceIn(0f, 1f))
+        fun OvalSpec.scaled(k: Float) = OvalSpec(insetFraction, bottom, height, color.scaled(k), blur, fades)
+        return LayerSpec(
+            shadow = spec.shadow?.let { ShadowSpec(it.blur, it.offsetY, it.scaleX, it.scaleY, it.color.scaled(o.shadowScale)) },
+            caustic = spec.caustic?.scaled(o.shadowScale),
+            contact = spec.contact?.scaled(o.shadowScale),
+            light = spec.light,
+            grain = o.grain ?: spec.grain,
+            insets = spec.insets,
+            rim = spec.rim?.let { rim -> RimSpec(rim.angle, rim.stops.map { (stop, color) -> stop to color.scaled(o.rimScale) }) },
+            driftOffsetSeconds = spec.driftOffsetSeconds,
+        )
+    }
+
+    private fun baseLayers(finish: GlassFinish, c: GlassContext, w: Float, h: Float): LayerSpec {
         val drift = ((w * 3f + h) * 1.7f) % 8f
         return if (c.reduceTransparency) reduceTransparencyLayers(finish, c, drift) else litLayers(finish, c, w, h, drift)
     }

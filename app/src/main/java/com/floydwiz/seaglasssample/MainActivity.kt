@@ -5,10 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import kotlinx.coroutines.runBlocking
 import com.floydwiz.seaglass.color.GlassRole
 import com.floydwiz.seaglass.theme.SeaGlassContrast
 import com.floydwiz.seaglasssample.control.ControlState
 import com.floydwiz.seaglasssample.control.ThemeMode
+import com.floydwiz.seaglasssample.control.readControls
 import com.floydwiz.seaglasssample.showcase.ShowcaseApp
 
 /**
@@ -17,14 +19,19 @@ import com.floydwiz.seaglasssample.showcase.ShowcaseApp
  * - `route`: a destination route; `theme`: System, Light or Dark; `contrast`: System, Standard, Medium or High;
  * - `rt`: reduce transparency; `rtAuto`: reduce transparency when system blur is off; `dynamic`: dynamic colour;
  * - `seed`: a glass role name.
+ * Without any control extra the controls are read from, and saved to, DataStore; with them they are neither.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { ShowcaseApp(intent.toControlState(), intent.getStringExtra("route")) }
+        val hasExtras = ControlExtras.any { intent.hasExtra(it) }
+        val initial = if (hasExtras) intent.toControlState() else runBlocking { readControls(this@MainActivity) }
+        setContent { ShowcaseApp(initial, intent.getStringExtra("route"), persist = !hasExtras) }
     }
 }
+
+private val ControlExtras = listOf("theme", "contrast", "rt", "rtAuto", "dynamic", "seed")
 
 private fun Intent.toControlState() = ControlState(
     themeMode = getStringExtra("theme")?.let { ThemeMode.valueOf(it) } ?: ThemeMode.System,

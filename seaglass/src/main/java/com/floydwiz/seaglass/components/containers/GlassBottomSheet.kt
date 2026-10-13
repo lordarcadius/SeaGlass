@@ -1,5 +1,7 @@
 package com.floydwiz.seaglass.components.containers
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -20,7 +22,7 @@ import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 
-/** Sheet pane: milk, inset 8 dp from the screen edges, radius 36, with a 40×6 well grabber. */
+/** Sheet pane: milk over a solid surface (a modal window has no backdrop to blur), inset 8 dp, radius 36, with a 40×6 well grabber. */
 @Composable
 fun GlassSheetPane(
     modifier: Modifier = Modifier,
@@ -29,7 +31,7 @@ fun GlassSheetPane(
 ) {
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier,
+        modifier = modifier.background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(36.dp)),
         shape = SeaGlassShape.Pane(36.dp),
         role = role,
         reactsTo = emptySet(),
