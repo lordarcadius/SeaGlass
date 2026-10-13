@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.GlassRole
 import com.floydwiz.seaglass.color.TonalTones
@@ -35,6 +36,7 @@ private val BoxSize = 26.dp
 /**
  * 26 dp check with a 9 dp radius: a well when off, glass with a heavy check or dash when on or mixed.
  * An error check is a sea pink tinted well with a 1.5 dp ring.
+ * - [size] and [shape] change the box, for example a 28 dp round check pebble.
  */
 @Composable
 fun GlassTriStateCheckbox(
@@ -45,6 +47,8 @@ fun GlassTriStateCheckbox(
     error: Boolean = false,
     role: TonalTones = LocalGlassRole.current,
     interactionSource: MutableInteractionSource? = null,
+    size: Dp = BoxSize,
+    shape: SeaGlassShape = SeaGlassShape.Pane(9.dp),
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val seaPink = LocalRolePalettes.current[GlassRole.SeaPink]
@@ -52,7 +56,6 @@ fun GlassTriStateCheckbox(
     val focused by source.collectIsFocusedAsState()
     val forced = LocalForcedGlassState.current
     val effectiveRole = if (error) seaPink else role
-    val shape = SeaGlassShape.Pane(9.dp)
     val on = state != ToggleableState.Off
     val showRing = error && !on && enabled && !focused && forced != GlassState.Focus && forced != GlassState.Disabled
 
@@ -65,7 +68,7 @@ fun GlassTriStateCheckbox(
         GlassSurface(
             finish = if (on) GlassFinish.Glass else GlassFinish.Well,
             modifier = Modifier
-                .size(BoxSize)
+                .size(size)
                 .then(if (showRing) Modifier.border(1.5.dp, if (dark) seaPink[80] else seaPink[60], shape) else Modifier),
             shape = shape,
             role = effectiveRole,
@@ -76,7 +79,7 @@ fun GlassTriStateCheckbox(
             if (on) {
                 SymbolIcon(
                     if (state == ToggleableState.On) "check" else "remove",
-                    size = 20.dp, weight = 700, tint = LocalContentColor.current,
+                    size = size * 0.77f, weight = 700, tint = LocalContentColor.current,
                 )
             }
         }
@@ -92,6 +95,8 @@ fun GlassCheckbox(
     error: Boolean = false,
     role: TonalTones = LocalGlassRole.current,
     interactionSource: MutableInteractionSource? = null,
+    size: Dp = BoxSize,
+    shape: SeaGlassShape = SeaGlassShape.Pane(9.dp),
 ) {
     GlassTriStateCheckbox(
         state = ToggleableState(checked),
@@ -101,6 +106,8 @@ fun GlassCheckbox(
         error = error,
         role = role,
         interactionSource = interactionSource,
+        size = size,
+        shape = shape,
     )
 }
 

@@ -17,20 +17,27 @@ internal val LocalHazeState = staticCompositionLocalOf<HazeState?> { null }
 /**
  * Installs a backdrop for glass.
  * - [backdrop] is drawn first and marked as the source that glass blurs.
- * - [content] is drawn above it; glass elements in [content] blur [backdrop].
- * - Adaptive surfaces in [content] sample the luminance of [backdrop]; with none, no sampling happens.
+ * - [layer] is optional page content drawn above it, for example a scrolling list that contains glass of its own. It is
+ *   a second source above [backdrop]: glass inside it blurs [backdrop], while glass in [content] blurs both.
+ * - [content] is drawn above both; glass elements in [content] blur what is behind them.
+ * - Adaptive surfaces in [content] sample the luminance of [backdrop] and [layer]; with none, no sampling happens.
+ * Glass inside [backdrop] itself has no source below it to blur, so put content that contains glass in [layer].
  */
 @Composable
 fun GlassBackdrop(
     modifier: Modifier = Modifier,
     backdrop: @Composable BoxScope.() -> Unit,
+    layer: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val state = rememberHazeState()
     val sampler = remember { BackdropSampler() }
     CompositionLocalProvider(LocalHazeState provides state, LocalBackdropSampler provides sampler) {
         Box(modifier) {
-            Box(Modifier.matchParentSize().then(sampler.captureModifier()).hazeSource(state), content = backdrop)
+            Box(Modifier.matchParentSize().then(sampler.captureModifier())) {
+                Box(Modifier.matchParentSize().hazeSource(state, zIndex = 0f), content = backdrop)
+                if (layer != null) Box(Modifier.matchParentSize().hazeSource(state, zIndex = 1f), content = layer)
+            }
             content()
         }
     }

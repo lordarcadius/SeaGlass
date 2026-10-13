@@ -47,6 +47,9 @@ import com.floydwiz.seaglasssample.showcase.catalogue.c5.ContainersPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c6.FeedbackPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c7.FabsPage
 import com.floydwiz.seaglasssample.showcase.motion.MotionLab
+import com.floydwiz.seaglasssample.demos.files.FilesDemo
+import com.floydwiz.seaglasssample.demos.gallery.GalleryDemo
+import com.floydwiz.seaglasssample.demos.todo.TodoDemo
 import com.floydwiz.seaglasssample.showcase.a11y.AccessibilityLab
 import com.floydwiz.seaglasssample.showcase.home.HomeScreen
 import com.floydwiz.seaglasssample.showcase.materials.MaterialsLab
@@ -122,7 +125,7 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
             title = Destinations.titleOf(route),
             onBack = if (route == null || route == Destinations.HOME) null else ({ navController.popBackStack() }),
             fullBleed = fullBleed,
-            controlsTop = if (route == Destinations.HOME) 4.dp else 112.dp,
+            controlsTop = if (route == Destinations.HOME || route?.startsWith("demos/") == true) 4.dp else 64.dp,
             controls = controls,
         ) { padding ->
             CompositionLocalProvider(LocalControls provides controls) {
@@ -146,6 +149,9 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
                     composable(Destinations.components[5].route) { ContainersPage(padding) }
                     composable(Destinations.components[6].route) { FeedbackPage(padding) }
                     composable(Destinations.components[7].route) { FabsPage(padding) }
+                    composable("demos/files") { FilesDemo(onBack = { navController.popBackStack() }) }
+                    composable("demos/todo") { TodoDemo(onBack = { navController.popBackStack() }) }
+                    composable("demos/gallery") { GalleryDemo(onBack = { navController.popBackStack() }) }
                     composable(Destinations.MATERIALS) { MaterialsLab(padding) }
                     composable(Destinations.A11Y) { AccessibilityLab(padding) }
                     composable(Destinations.MOTION) { MotionLab(padding) }
@@ -163,4 +169,4 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
     }
 }
 
-private val BuiltDemos = emptySet<String>()
+private val BuiltDemos = setOf("demos/gallery", "demos/todo", "demos/files")

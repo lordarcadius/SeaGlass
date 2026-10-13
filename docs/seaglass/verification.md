@@ -35,6 +35,10 @@ Per screen the lowest values are: Settings 6.45, Library 4.15, Assistant 3.76, I
   - **Library, dark, standard / medium / high**: the selected tab label "Library" (3.8, 3.9 and 4.2 against 4.5). Adaptive tint now measures luminance after the finish's own brightness lift, which makes the tab lens and bar take the protective tint over the photos (now 4.9).
   - Two measurement artifacts, listed in Method.
 
+## Re-run after M10
+
+While building the demos, glass placed inside the `backdrop` slot of `GlassBackdrop` (list content with milk rows, filled sliders and bubbles) turned out to lose its backdrop body, because Haze lets an effect inside a source blur only sources below it. Milk rows were transparent and liquid fills pale. `GlassBackdrop` now has a `layer` slot (a second source above the backdrop) and the Inbox, Assistant and Library screens moved their lists into it. Re-running the matrix for those three screens plus the Gallery, Todo and File manager demos (6 screens × 4 modes × 2 themes = 48 captures, 1160 measurements, phone frame, tablet AVD): **0 below threshold**. The Inbox preview line that failed under the Compose button's glow (above) no longer fails, because the button's glow is now drawn by a glass with a body. The first-pass numbers above, and `measurements.csv`, are from before this change; the screens that did not move (In call, Settings, Tablet mail) are unaffected.
+
 ## Wiring checked live
 
 - **System contrast**: `adb shell settings put secure contrast_level 1.0` while the app was running switched the library to High contrast (outlined bar, darker text) without a restart, and `0.0` switched it back. Below 0.25 is Standard, below 0.75 Medium and above that High.

@@ -34,6 +34,9 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -101,7 +104,11 @@ fun GlassLinearProgress(
     }
 }
 
-/** Liquid progress bar, 30 dp tall, carrying a label on the liquid and a value on the right. */
+/**
+ * Liquid progress bar, 30 dp tall, carrying a label and a value.
+ * - The label sits on the liquid in white-on-fill when the liquid is long enough to hold it, otherwise it starts just
+ *   past the liquid in ink; the value sits on the right, on the liquid only when the liquid reaches it.
+ */
 @Composable
 fun GlassLiquidProgress(
     progress: Float,
@@ -114,15 +121,23 @@ fun GlassLiquidProgress(
     val dark = LocalSeaGlassDark.current
     val onFill = glassContentColor(GlassFinish.Fill, role, dark)
     val ink = if (dark) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight
+    val style = TextStyle(fontSize = 13.5.sp, fontWeight = FontWeight(650))
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
     BoxWithConstraints(modifier.fillMaxWidth().height(height)) {
         GlassSurface(GlassFinish.Well, Modifier.size(maxWidth, height), SeaGlassShape.Pane(height / 2), role, reactsTo = emptySet())
-        GlassSurface(
-            GlassFinish.Fill,
-            Modifier.size(maxOf(height, maxWidth * progress.coerceIn(0f, 1f)), height),
-            SeaGlassShape.Pane(height / 2), role, reactsTo = emptySet(),
+        val fill = maxOf(height, maxWidth * progress.coerceIn(0f, 1f))
+        GlassSurface(GlassFinish.Fill, Modifier.size(fill, height), SeaGlassShape.Pane(height / 2), role, reactsTo = emptySet())
+        val padding = 14.dp
+        val labelWidth = with(density) { measurer.measure(label, style).size.width.toDp() }
+        val valueWidth = with(density) { measurer.measure(valueLabel, style).size.width.toDp() }
+        val labelOnLiquid = fill >= labelWidth + padding * 2
+        val valueOnLiquid = fill >= maxWidth - valueWidth - padding
+        Text(
+            label, Modifier.align(Alignment.CenterStart).padding(start = if (labelOnLiquid) padding else fill + 10.dp),
+            color = if (labelOnLiquid) onFill else ink, style = style,
         )
-        Text(label, Modifier.align(Alignment.CenterStart).padding(start = 14.dp), color = onFill, fontSize = 13.5.sp, fontWeight = FontWeight(650))
-        Text(valueLabel, Modifier.align(Alignment.CenterEnd).padding(end = 14.dp), color = ink, fontSize = 13.5.sp, fontWeight = FontWeight(650))
+        Text(valueLabel, Modifier.align(Alignment.CenterEnd).padding(end = padding), color = if (valueOnLiquid) onFill else ink, style = style)
     }
 }
 

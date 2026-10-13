@@ -8,6 +8,12 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalContentColor
+import com.floydwiz.seaglass.components.icon.SymbolIcon
+import com.floydwiz.seaglass.material.GlassFinish
+import com.floydwiz.seaglass.material.GlassSurface
+import com.floydwiz.seaglass.shape.SeaGlassShape
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -73,7 +79,7 @@ fun ShowcaseScaffold(
     if (showControls) ControlSheet(controls) { showControls = false }
 }
 
-/** The controls trigger on routes without a top bar; drag it away from whatever it covers. */
+/** The controls trigger on routes without a top bar, an ink lens because it floats over arbitrary content; drag it away from whatever it covers. */
 @Composable
 private fun FloatingControlLens(onClick: () -> Unit, topOffset: Dp, modifier: Modifier = Modifier) {
     var drag by remember { mutableStateOf(Offset.Zero) }
@@ -84,6 +90,8 @@ private fun FloatingControlLens(onClick: () -> Unit, topOffset: Dp, modifier: Mo
             .offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }
             .pointerInput(Unit) { detectDragGestures { _, amount -> drag += amount } },
     ) {
-        GlassBarLens("tune", onClick, description = "Controls")
+        GlassSurface(GlassFinish.Ink, Modifier.size(48.dp), SeaGlassShape.Lens, onClick = onClick) {
+            SymbolIcon("tune", size = 24.dp, tint = LocalContentColor.current, contentDescription = "Controls")
+        }
     }
 }

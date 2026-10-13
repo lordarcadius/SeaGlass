@@ -7,6 +7,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -52,6 +53,7 @@ import com.floydwiz.seaglass.components.buttons.GlassButtonStyle
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.components.navigation.GlassFloatingToolbar
 import com.floydwiz.seaglass.components.navigation.GlassTabBar
+import com.floydwiz.seaglass.components.navigation.TabBarState
 import com.floydwiz.seaglass.components.navigation.TabItem
 import com.floydwiz.seaglass.components.navigation.ToolItem
 import com.floydwiz.seaglass.components.navigation.rememberTabBarState
@@ -93,8 +95,27 @@ private fun sectionsFor(mode: Int): List<Section> {
 /** Photo library: browse by period, then select photos with a clear toolbar and a glass share lens. */
 @Composable
 fun LibraryScreen() {
-    var mode by remember { mutableIntStateOf(2) }
     var tab by remember { mutableIntStateOf(0) }
+    PhotoBrowser { tabState ->
+        GlassTabBar(
+            Tabs, tab, { tab = it }, Modifier.align(Alignment.BottomStart).navigationBarsPadding().padding(start = 28.dp, bottom = 26.dp),
+            minimized = tabState.minimized, tabWidth = 92.dp, onSearch = {}, onExpand = { tabState.minimized = false },
+            accessory = { Text("2,481 photos", Modifier.padding(horizontal = 20.dp), color = LocalContentColor.current, fontSize = 14.sp, fontWeight = FontWeight(600)) },
+        )
+    }
+}
+
+/**
+ * The browse and select experience of the library.
+ * - [bottomBar] draws the floating tab bar while not selecting, given the scroll-driven bar state.
+ * - [onOpenPhoto] gets the image index of a tapped tile.
+ */
+@Composable
+fun PhotoBrowser(
+    onOpenPhoto: ((Int) -> Unit)? = null,
+    bottomBar: @Composable BoxScope.(TabBarState) -> Unit,
+) {
+    var mode by remember { mutableIntStateOf(2) }
     var selecting by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf(setOf<Int>()) }
     val tabState = rememberTabBarState()
@@ -108,42 +129,41 @@ fun LibraryScreen() {
 
     GlassBackdrop(
         Modifier.fillMaxSize(),
-        backdrop = {
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-                LazyColumn(
-                    Modifier.fillMaxSize().nestedScroll(tabState.connection), listState,
-                    contentPadding = PaddingValues(top = if (selecting) topBarHeight else 0.dp, bottom = 140.dp),
-                ) {
-                    if (!selecting) {
-                        item {
-                            Row(Modifier.statusBarsPadding().fillMaxWidth().padding(end = 16.dp, top = 8.dp), Arrangement.End, Alignment.CenterVertically) {
-                                GlassButton("Select", { selecting = true; tabState.minimized = false }, style = GlassButtonStyle.Clear, size = GlassButtonSize.S)
-                                Spacer(Modifier.size(10.dp))
-                                GlassSurface(GlassFinish.Clear, Modifier.size(40.dp), SeaGlassShape.Round, onClick = {}) { Avatar(2, 32.dp) }
-                            }
-                        }
-                        item {
-                            Text("Library", Modifier.padding(start = 20.dp, top = 12.dp), color = ink, fontSize = 34.sp, fontWeight = FontWeight(760), letterSpacing = (-0.4).sp)
-                            Text("2,481 photos · 38 videos", Modifier.padding(start = 21.dp, top = 2.dp), color = glassOnSurfaceVariant(), fontSize = 14.sp, fontWeight = FontWeight(500))
-                            GlassSegmentedControl(Modes, mode, { mode = it }, Modifier.padding(start = 18.dp, top = 18.dp), segmentWidth = 92.dp)
+        backdrop = { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) },
+        layer = {
+            LazyColumn(
+                Modifier.fillMaxSize().nestedScroll(tabState.connection), listState,
+                contentPadding = PaddingValues(top = if (selecting) topBarHeight else 0.dp, bottom = 140.dp),
+            ) {
+                if (!selecting) {
+                    item {
+                        Row(Modifier.statusBarsPadding().fillMaxWidth().padding(end = 16.dp, top = 8.dp), Arrangement.End, Alignment.CenterVertically) {
+                            GlassButton("Select", { selecting = true; tabState.minimized = false }, style = GlassButtonStyle.Clear, size = GlassButtonSize.S)
+                            Spacer(Modifier.size(10.dp))
+                            GlassSurface(GlassFinish.Clear, Modifier.size(40.dp), SeaGlassShape.Round, onClick = {}) { Avatar(2, 32.dp) }
                         }
                     }
-                    sections.forEach { section ->
-                        item(key = "h-${section.title}") {
-                            SectionHeader(section, if (selecting) "${section.caption.substringBefore(" ·")} · ${selected.count { it in section.start until section.start + section.count }} of ${section.count} selected" else section.caption)
-                        }
-                        val rows = (0 until section.count).chunked(3)
-                        rows.forEachIndexed { rowIndex, ids ->
-                            item(key = "r-${section.title}-$rowIndex") {
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(top = 4.dp), Arrangement.spacedBy(4.dp)) {
-                                    ids.forEach { local ->
-                                        val id = section.start + local
-                                        Box(Modifier.weight(1f)) {
-                                            Tile(id, selecting, id in selected, onClick = { if (selecting) toggle(id) }, onLongClick = { selecting = true; tabState.minimized = false; selected = selected + id })
-                                        }
+                    item {
+                        Text("Library", Modifier.padding(start = 20.dp, top = 12.dp), color = ink, fontSize = 34.sp, fontWeight = FontWeight(760), letterSpacing = (-0.4).sp)
+                        Text("2,481 photos · 38 videos", Modifier.padding(start = 21.dp, top = 2.dp), color = glassOnSurfaceVariant(), fontSize = 14.sp, fontWeight = FontWeight(500))
+                        GlassSegmentedControl(Modes, mode, { mode = it }, Modifier.padding(start = 18.dp, top = 18.dp), segmentWidth = 92.dp)
+                    }
+                }
+                sections.forEach { section ->
+                    item(key = "h-${section.title}") {
+                        SectionHeader(section, if (selecting) "${section.caption.substringBefore(" ·")} · ${selected.count { it in section.start until section.start + section.count }} of ${section.count} selected" else section.caption)
+                    }
+                    val rows = (0 until section.count).chunked(3)
+                    rows.forEachIndexed { rowIndex, ids ->
+                        item(key = "r-${section.title}-$rowIndex") {
+                            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(top = 4.dp), Arrangement.spacedBy(4.dp)) {
+                                ids.forEach { local ->
+                                    val id = section.start + local
+                                    Box(Modifier.weight(1f)) {
+                                        Tile(id, selecting, id in selected, onClick = { if (selecting) toggle(id) else onOpenPhoto?.invoke(TileImages[id % TileImages.size]) }, onLongClick = { selecting = true; tabState.minimized = false; selected = selected + id })
                                     }
-                                    repeat(3 - ids.size) { Spacer(Modifier.weight(1f)) }
                                 }
+                                repeat(3 - ids.size) { Spacer(Modifier.weight(1f)) }
                             }
                         }
                     }
@@ -171,11 +191,7 @@ fun LibraryScreen() {
                 onConfirm = {}, confirmIcon = "ios_share",
             )
         } else {
-            GlassTabBar(
-                Tabs, tab, { tab = it }, Modifier.align(Alignment.BottomStart).navigationBarsPadding().padding(start = 28.dp, bottom = 26.dp),
-                minimized = tabState.minimized, tabWidth = 92.dp, onSearch = {}, onExpand = { tabState.minimized = false },
-                accessory = { Text("2,481 photos", Modifier.padding(horizontal = 20.dp), color = LocalContentColor.current, fontSize = 14.sp, fontWeight = FontWeight(600)) },
-            )
+            bottomBar(tabState)
         }
         }
     }

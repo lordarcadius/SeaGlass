@@ -136,24 +136,24 @@ private fun Chat(onVoice: () -> Unit) {
 
     GlassBackdrop(
         Modifier.fillMaxSize(),
-        backdrop = {
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-                Aurora(strong = false)
-                LazyColumn(
-                    Modifier.fillMaxSize().imePadding(), listState,
-                    contentPadding = PaddingValues(top = topInset + 64.dp, bottom = 150.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp),
-                ) {
-                    item { Text("Today 9:41", Modifier.fillMaxWidth(), color = glassOnSurfaceVariant(), fontSize = 12.5.sp, fontWeight = FontWeight(600), textAlign = TextAlign.Center) }
-                    items(messages.size) { index ->
-                        when (val message = messages[index]) {
-                            is Message.User -> UserBubble(message.text)
-                            is Message.Reply -> ReplyBlock(message)
-                        }
-                    }
-                }
+        backdrop = { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+    Aurora(strong = false)
+} },
+layer = {
+    LazyColumn(
+        Modifier.fillMaxSize().imePadding(), listState,
+        contentPadding = PaddingValues(top = topInset + 64.dp, bottom = 150.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        item { Text("Today 9:41", Modifier.fillMaxWidth(), color = glassOnSurfaceVariant(), fontSize = 12.5.sp, fontWeight = FontWeight(600), textAlign = TextAlign.Center) }
+        items(messages.size) { index ->
+            when (val message = messages[index]) {
+                is Message.User -> UserBubble(message.text)
+                is Message.Reply -> ReplyBlock(message)
             }
-        },
+        }
+    }
+},
     ) {
         GlassEdgeDiffusion(Modifier.fillMaxWidth(), height = topInset + 84.dp, visible = listState.canScrollBackward)
         ScreenTopBar("menu", {}, "edit_square", { messages.clear(); messages.addAll(Opening) }, title = "Assistant")

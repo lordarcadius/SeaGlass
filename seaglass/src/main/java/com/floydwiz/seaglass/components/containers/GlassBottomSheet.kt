@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,6 +63,6 @@ fun GlassBottomSheet(
         tonalElevation = 0.dp,
         dragHandle = null,
     ) {
-        GlassSheetPane(Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp).navigationBarsPadding(), content = content)
+        GlassSheetPane(Modifier.fillMaxWidth().padding(horizontal = 8.dp).padding(bottom = 8.dp).navigationBarsPadding(), content = content)
     }
 }

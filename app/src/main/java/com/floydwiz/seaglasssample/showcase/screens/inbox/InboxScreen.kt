@@ -83,31 +83,30 @@ fun InboxScreen() {
 
     GlassBackdrop(
         Modifier.fillMaxSize(),
-        backdrop = {
-            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 120.dp)) {
-                    item {
-                        Column(Modifier.statusBarsPadding()) {
-                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 8.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                                GlassBarLens("menu", {}, description = "Menu")
-                                GlassSurface(GlassFinish.Clear, Modifier.size(40.dp), SeaGlassShape.Round, onClick = {}) { Avatar(6, 32.dp) }
-                            }
-                            Text("Inbox", Modifier.padding(start = 20.dp, top = 12.dp), color = ink, fontSize = 34.sp, fontWeight = FontWeight(760), letterSpacing = (-0.4).sp)
-                            Text(
-                                "$unreadCount unread · updated just now", Modifier.padding(start = 21.dp, top = 2.dp),
-                                color = glassOnSurfaceVariant(), fontSize = 14.sp, fontWeight = FontWeight(500),
-                            )
-                            GlassSearchField(query, { query = it }, Modifier.padding(horizontal = 16.dp).padding(top = 18.dp).fillMaxWidth(), placeholder = "Search mail")
-                            Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(top = 14.dp, bottom = 6.dp), Arrangement.spacedBy(8.dp)) {
-                                Filters.forEach { name ->
-                                    GlassFilterChip(name in filters, { filters = if (name in filters) filters - name else filters + name }, name)
-                                }
+        backdrop = { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) },
+        layer = {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 120.dp)) {
+                item {
+                    Column(Modifier.statusBarsPadding()) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 8.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                            GlassBarLens("menu", {}, description = "Menu")
+                            GlassSurface(GlassFinish.Clear, Modifier.size(40.dp), SeaGlassShape.Round, onClick = {}) { Avatar(6, 32.dp) }
+                        }
+                        Text("Inbox", Modifier.padding(start = 20.dp, top = 12.dp), color = ink, fontSize = 34.sp, fontWeight = FontWeight(760), letterSpacing = (-0.4).sp)
+                        Text(
+                            "$unreadCount unread · updated just now", Modifier.padding(start = 21.dp, top = 2.dp),
+                            color = glassOnSurfaceVariant(), fontSize = 14.sp, fontWeight = FontWeight(500),
+                        )
+                        GlassSearchField(query, { query = it }, Modifier.padding(horizontal = 16.dp).padding(top = 18.dp).fillMaxWidth(), placeholder = "Search mail")
+                        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(top = 14.dp, bottom = 6.dp), Arrangement.spacedBy(8.dp)) {
+                            Filters.forEach { name ->
+                                GlassFilterChip(name in filters, { filters = if (name in filters) filters - name else filters + name }, name)
                             }
                         }
                     }
-                    items(visible, key = { it.id }) { mail ->
-                        MailRow(mail, unread = mail.unread && mail.id !in readIds, last = mail === visible.last()) { readIds = readIds + mail.id }
-                    }
+                }
+                items(visible, key = { it.id }) { mail ->
+                    MailRow(mail, unread = mail.unread && mail.id !in readIds, last = mail === visible.last()) { readIds = readIds + mail.id }
                 }
             }
         },
