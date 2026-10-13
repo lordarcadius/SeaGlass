@@ -39,6 +39,8 @@ import com.floydwiz.seaglasssample.control.rememberControlState
 import com.floydwiz.seaglasssample.showcase.catalogue.c0.LanguagePage
 import com.floydwiz.seaglasssample.showcase.catalogue.c1.ButtonsPage
 import com.floydwiz.seaglasssample.showcase.catalogue.c2.SelectionPage
+import com.floydwiz.seaglasssample.showcase.catalogue.c3.InputPage
+import com.floydwiz.seaglasssample.showcase.catalogue.c4.NavigationPage
 import com.floydwiz.seaglasssample.showcase.spike.SpikeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,7 +104,9 @@ fun ShowcaseApp() {
                 composable(Destinations.components[0].route) { LanguagePage(padding) }
                 composable(Destinations.components[1].route) { ButtonsPage(padding) }
                 composable(Destinations.components[2].route) { SelectionPage(padding) }
-                Destinations.all.filter { it != Destinations.spike && it !in Destinations.components.take(3) }.forEach { destination ->
+                composable(Destinations.components[3].route) { InputPage(padding) }
+                composable(Destinations.components[4].route) { NavigationPage(padding) }
+                Destinations.all.filter { it != Destinations.spike && it !in Destinations.components.take(5) }.forEach { destination ->
                     composable(destination.route) {
                         EmptyDestination(destination, Modifier.padding(padding))
                     }
