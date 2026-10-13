@@ -46,7 +46,6 @@ import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.glassContentColor
-import com.floydwiz.seaglass.material.rgba
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
@@ -158,7 +157,7 @@ fun GlassRingProgress(
     val motion = LocalMotionEnabled.current
     val from = if (dark) role[70] else role[60]
     val to = if (dark) role[80] else role[70]
-    val track = if (dark) rgba(0, 0, 0, 0.42f) else rgba(22, 38, 48, 0.12f)
+    val track = if (dark) SeaGlassTokens.Veil.RingTrackDark else SeaGlassTokens.Veil.RingTrackLight
     val spin by rememberInfiniteTransition(label = "ring").animateFloat(
         0f, 360f, infiniteRepeatable(tween(SeaGlassTokens.Motion.millis(1200), easing = LinearEasing)), label = "spin",
     )

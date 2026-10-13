@@ -77,3 +77,9 @@ private fun GlassCarouselPreview() = GlassPreview {
         Box(Modifier.fillMaxSize().maskClip(RoundedCornerShape(28.dp)).background(roles[tones[index]][80]))
     }
 }
+
+@LightDarkPreviews
+@Composable
+private fun GlassCaptionPreview() = GlassPreview {
+    GlassCaption(Modifier.height(40.dp)) { Text("Shore walk", Modifier.padding(horizontal = 16.dp)) }
+}

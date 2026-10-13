@@ -255,3 +255,34 @@ Resume from the last entry. Each milestone records what was built, what was veri
 - Not verified: Music search and radio tabs by touch, shuffle and repeat toggles, volume drag; Weather detail screen by touch, adding a location, scrubbing with a finger; Smart home on every room, other scenes, the vertical slider by touch; Notes list search, editing an existing note's checklist, Bold and Italic applied to typed text (the cluster toggles the style of the whole body); every demo with reduced motion, TalkBack and dynamic colour; the tablet layouts of these four.
 - Values chosen: the sky colours of the Weather demo are sample imagery like the photo (not theme colours) and are mixed 92% into the surface on dark themes; Bold and Italic apply to the whole body (no rich text); the playback clock is a simple one-second timer; Notes data is in memory.
 - Known gaps: Music mini player legibility over a small bright patch in dark standard (partial tint only); Weather overlay small text 3.5 to 3.8 in dark standard; Notes cannot delete a note; Smart home has no add-device flow; the tab bar in Music has no search lens, so Search is only the tab.
+
+## M12 — Polish and final verification
+
+- Checks run: the capture and contrast matrix over every route and demo (25 routes, light and dark, Standard / Medium / High / Reduced; 5424 measurements, see `verification.md`), the layer sweep and the macrobenchmark again, the release-style builds of `:benchmark`, and a source audit.
+- Fixed in this pass: the Home hero text and card descriptions (they were drawn straight on the photo; the title now sits in a clear caption pane and the photo has a scrim); the three remaining colour literals in components (the context-menu and FAB-menu veils and the ring track now live in `SeaGlassTokens.Veil`); a missing preview (`GlassCaption`); the sampler's cost (1/16 size every 800 ms instead of 1/8 every 300 ms); the FPS overlay no longer sits on the back lens; the control sheet and Home are persisted.
+- Added: an "Approximations in this build" list at the bottom of the Materials lab (lens fallback on Android 12, colour-matrix saturation, reduce-transparency behaviour and fallback, windows that cannot blur, adaptive sampling cadence, edge diffusion).
+- Audit results: every public component has a light and dark preview except the window wrappers `GlassAlert`, `GlassBottomSheet`, `GlassContextMenu`, `GlassTooltipBox` and `GlassToastHost`, which are previewed through their panes and `GlassToast`; no component hardcodes a colour (the finish recipes and the reduce-transparency fills are the generated token values).
+
+### Final summary
+
+**What exists**
+- `:seaglass` (library, `com.floydwiz.seaglass`): the Sea Glass material (twelve finishes ported from the reference recipes and checked against them under node), the state model (rest, hover, focus, press, disabled), the AGSL lens magnifier, the light drift clock, adaptive tint sampling, shapes, palettes and Roboto Flex, around 70 components (buttons and clusters, switches, checks, chips, sliders and pill sliders, text fields, search, prompt bar, pickers, tab bar, top bars, toolbars, rail, sidebar, scope bar, cards, lists, alert, sheet, menu, carousel, loading, progress, toast, banner, badge, tooltip, FAB and FAB menu), with light and dark previews.
+- `:app` (the showcase): Home; the Materials lab (override sliders and layer switches); the Components catalogue (C0 to C7, each in light and dark with a state picker); the Motion lab (replay and slow motion); the Accessibility lab (four modes at once, adaptive tint readout, audit rules); six screens (In call, Library, Inbox, Assistant with voice mode, Settings, tablet Mail); seven demos (Gallery, Todo, File manager, Music, Weather, Smart home, Notes); a persisted control sheet and an FPS overlay on every route.
+- `:benchmark` (Macrobenchmark of the library scroll), `tools/verification` (capture, contrast measurement and summary scripts) and `docs/seaglass` (spec, milestones, progress, verification report with 5424 measurements and contact sheets).
+
+**Verified on a device** (emulators only: `Pixel_9_Pro_XL` and `Pixel_Tablet`, API 35)
+- Every milestone's screens by screenshot, light and dark, and real touch for press, drag, typing, scrolling, swiping, FAB menus, sheets and dialogs on the controls of M2 to M11; live reaction to the system animator scale, window blur and contrast settings; contrast of every route in all four modes (2600 measurements in the last full pass, 5424 across the work).
+- Performance: glass costs about +4.5 ms p50 and +6 ms p95 over the no-glass baseline in the layer sweep; 0% missed deadlines there. The library scroll benchmark is noisy on the emulator (see `verification.md`).
+
+**Not verified**
+- A physical device of any kind. The **M1 performance gate** (JankStats p95 at or below 16 ms at 60 Hz) is therefore still **open**: the emulator's no-glass baseline is already 19 to 20 ms, so it neither passes nor fails there. First thing to do with a phone: `adb install` the debug APK, open Performance spike, run Layer sweep and read `SGPerf` in logcat.
+- Mouse hover (the forced Hover state is verified), the Android 12 lens fallback, TalkBack and keyboard traversal, dynamic colour in the accessibility matrix, large-screen layouts other than the 1280×800 dp mail screen and the tablet display captures.
+- Press and drag behaviours on most catalogue specimens (verified by forced state), and the specific flows listed under "Not verified" in each milestone entry above.
+
+**Known gaps**
+- Contrast: 16 accepted or marginal findings in dark Standard (Weather overlay text, the Music mini player over a bright cover, a field label, one specimen label); the rest of the 100 below-threshold rows are measurement artifacts or disabled specimens, explained in `verification.md`.
+- Performance: the tail latency of the library scroll rose after glass inside lists started to blur for real (the earlier numbers were lower because that glass drew no blur); the cause is not isolated and the emulator cannot judge it.
+- Dialogs, sheets and menus are separate windows that cannot blur the page, so they sit on a solid surface or dim; the FAB menu is in-window and does blur.
+- Fonts are unsubsetted (about 17 MB of Roboto Flex and Material Symbols in the APK); a subset would shrink the app.
+- Adaptive tint follows the reference recipes, which only adapt dark finishes; the spec's prose about a white tint in light themes is not implemented.
+- Demos use fixed in-memory data and simple playback or weather logic by design; tablet layouts of the demos are the phone layouts at a wider width (Todo uses the rail, File manager is capped at 720 dp).

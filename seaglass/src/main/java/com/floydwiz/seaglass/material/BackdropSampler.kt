@@ -30,15 +30,15 @@ import kotlin.math.roundToInt
 
 internal val LocalBackdropSampler = staticCompositionLocalOf<BackdropSampler?> { null }
 
-private const val SampleShrink = 8
-private const val SampleIntervalMillis = 300L
+private const val SampleShrink = 16
+private const val SampleIntervalMillis = 800L
 private const val BrightPercentile = 0.95f
 
 /**
  * Measures how bright the backdrop is under floating glass.
  * - It captures the backdrop at 1/[SampleShrink] size, only while at least one adaptive surface is registered.
  * - Luminance is the WCAG relative luminance of each pixel; a surface reads the 95th percentile over its bounds, so a small bright patch under it still counts.
- * - It re-captures only after the backdrop drew again, at most every 300 ms.
+ * - It re-captures only after the backdrop drew again, at most every 800 ms.
  */
 @Stable
 internal class BackdropSampler {

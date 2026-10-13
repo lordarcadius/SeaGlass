@@ -93,6 +93,16 @@ object SeaGlassTokens {
         val OutlineDark = Color(0xFF8A9296)
     }
 
+    /** Tints laid over the page behind a modal surface, and the track of a progress ring. */
+    object Veil {
+        val ContextMenuLight = Color(0x8CECF4F7)
+        val ContextMenuDark = Color(0x80000000)
+        val FabMenuLight = Color(0x73ECF4F7)
+        val FabMenuDark = Color(0x61000000)
+        val RingTrackLight = Color(0x1F162630)
+        val RingTrackDark = Color(0x6B000000)
+    }
+
     /** Solid fills used when transparency is reduced (`RTS` in recipes.js). */
     object ReduceTransparency {
         class Surfaces(val milk: Color, val well: Color, val clear: Color, val pearl: Color, val ink: Color, val dry: Color)

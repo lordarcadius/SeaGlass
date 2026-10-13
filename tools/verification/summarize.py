@@ -19,7 +19,8 @@ def main():
             captures[os.path.basename(path)[:-6]] = path
     rows = []
     for name, path in sorted(captures.items()):
-        _, screen, mode, theme = name.split("-")
+        *route, mode, theme = name.split("-")
+        screen = "-".join(route)
         for line in open(path):
             r = json.loads(line)
             rows.append({

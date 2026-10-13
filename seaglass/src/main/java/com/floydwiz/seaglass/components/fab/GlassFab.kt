@@ -42,7 +42,6 @@ import com.floydwiz.seaglass.material.LocalHazeState
 import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.material.LocalMotionScale
 import com.floydwiz.seaglass.material.SeaGlassTokens
-import com.floydwiz.seaglass.material.rgba
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
@@ -148,7 +147,7 @@ fun GlassFabMenu(
         }
     }
     val hazeState = LocalHazeState.current
-    val tint = if (dark) rgba(0, 0, 0, 0.38f) else rgba(236, 244, 247, 0.45f)
+    val tint = if (dark) SeaGlassTokens.Veil.FabMenuDark else SeaGlassTokens.Veil.FabMenuLight
     val veilStyle = remember(dark) {
         HazeBlurStyle {
             blurRadius(6.dp)

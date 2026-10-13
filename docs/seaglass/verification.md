@@ -1,6 +1,16 @@
-# Verification (M8)
+# Verification (M8 to M12)
 
 What was measured, how, and what failed. Everything here ran on emulators; see "Not verified" at the end.
+
+## Final state (M12)
+
+- Coverage: 25 routes in 4 modes × 2 themes (Home, the eight catalogue pages, the Motion, Materials and Accessibility labs, the six screens, the seven demos), 192 captures on the phone frame (and the tablet screen on the `Pixel_Tablet` AVD): **5424 measurements, 100 below threshold** (`verification/measurements.csv`; later captures replace earlier ones of the same route, mode and theme; catalogue and lab pages are measured on their first viewport only).
+- The 100 break down as follows. None is a failure observed on screen that was left unexplained.
+  - 40 measurement artifacts on narrow glyphs inside small beads (the count beads of the Smart home scope bar and the tablet rail, the "T" avatar): the bead's white gloss highlight falls inside the glyph's box, so the 5th percentile reads about 1:1 while the median reads 5.5 to 6.7.
+  - 36 on elements cut off by their container or the screen edge, so the node's box includes pixels from outside the element: the last Inbox rows in the Accessibility lab frames (12), the "Press keeps the outline" line at the bottom of C0 (8), and the ring around the small clear lens in a field (8); and 8 for the "Disabled" row of C1, which is dry glass at 38% content by design (disabled controls are exempt from the contrast rule).
+  - 16 real but accepted or marginal findings: the Weather overlay card and hourly labels in dark Standard (3.5 to 3.8 against 4.5, the top-left specular pool of dark clear glass; Medium, High and Reduced pass), the Music mini player's title where a bright cover passes under its left end (2.7 and 4.3, dark Standard; 3.8 in Medium), the "Email" label above a field in Medium and Reduced (4.3 to 4.4), and the "Glass" label on the Materials lab specimen in dark Standard (4.0).
+- Every other measured element passes: text 4.5:1 (3:1 for large text), icons 3:1, at the 5th percentile of the pixels behind it.
+- Re-run after the final changes: the layer sweep and the macrobenchmark (below). The M1 gate on a real device is still open.
 
 ## Setup
 
@@ -70,6 +80,12 @@ The seven demos were captured with the same matrix (7 demos × 4 modes × 2 them
 
   The glass run renders 1077 frames over the same gestures because the light drift redraws continuously; the reduced-transparency run only draws while scrolling. The emulator's GPU makes the absolute glass numbers poor evidence (its no-glass JankStats baseline is already about 19 to 20 ms per frame at 60 Hz, above the 16.7 ms budget), so they say how much more glass costs and not whether it holds 60 fps.
 - The benchmark first failed with `ENOSPC` because the phone AVD's data partition was 98% full; the Perfetto trace of one iteration is about 400 MB. It was moved to the tablet AVD and the traces were deleted after each run.
+
+## Final performance numbers (M12, emulator)
+
+- Layer sweep, tablet AVD at 1344×2992: all layers off 19.7 ms p50 / 20.6 p95; glass with all layers about 24.2 p50 / 26.7 p95 (+4.5 and +6.1), 0% missed deadlines in every row. The first "all layers" row reads 16.8 ms again, a warm-up artifact. M1 to M8 read +3.5 to +3.9 p50 and +4.4 to +4.8 p95, so the cost of the full stack has grown slightly (the tinted glass inside lists now blurs for real, see "Re-run after M10").
+- Macrobenchmark, library scroll in dark with glass, five runs of the shipped build (3 iterations each) and one with the adaptive sampler off: frame CPU p50 between 18.0 and 32.4 ms, p90 between 34.2 and 34.9, p95 between 34.7 and 49.2, p99 between 54 and 240 (the sampler-off run read 18.2 / 33.3 / 34.8 / 136). Reduced transparency: p50 3.7, p90 6.0, p95 7.0, p99 8.2. The M8 run of the same test read 17.9 / 18.9 / 32.5 / 33.0 with glass. The emulator's frames land either on one vsync (about 17 ms) or two (about 33 ms), so the median flips between runs; the tail moved up after glass inside lists started to blur, and turning the sampler off did not change it, so the sampler is not the cause. The cause was not isolated further, and it cannot be judged on an emulator whose no-glass baseline is already above 16.7 ms.
+- Lever, if a physical phone shows it: `HazePerformanceMode.Performance`, drop the blur of glass inside lists (milk rows are 86 to 90% opaque, their blur is barely visible), or skip it while scrolling.
 
 ## Not verified
 

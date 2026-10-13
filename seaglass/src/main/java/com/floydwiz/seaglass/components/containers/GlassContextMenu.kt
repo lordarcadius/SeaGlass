@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.floydwiz.seaglass.material.rgba
+import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 
@@ -35,7 +35,7 @@ fun GlassContextMenu(
         Box(
             Modifier
                 .fillMaxSize()
-                .background(if (dark) rgba(0, 0, 0, 0.5f) else rgba(236, 244, 247, 0.55f))
+                .background(if (dark) SeaGlassTokens.Veil.ContextMenuDark else SeaGlassTokens.Veil.ContextMenuLight)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onDismissRequest),
             contentAlignment = Alignment.Center,
         ) {

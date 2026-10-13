@@ -146,8 +146,19 @@ fun MaterialsLab(contentPadding: PaddingValues) {
             }
         }
         Text(info(finish, dark, recipeBlur, overrides, layers), color = glassOnSurfaceVariant(), fontSize = 13.sp, lineHeight = 19.sp)
+        Label("Approximations in this build")
+        Approximations.forEach { Text("• $it", color = glassOnSurfaceVariant(), fontSize = 13.sp, lineHeight = 19.sp) }
     }
 }
+
+private val Approximations = listOf(
+    "Lens magnification is a 1.12× AGSL shader on Android 13 and later; on Android 12 it is a 1.1× scale.",
+    "Backdrop saturation and brightness are a colour matrix applied inside Haze; saturation is not a native Haze setting.",
+    "Reduce transparency replaces the blur with solid fills from the neutral palette, and is also entered when the system turns window blur off. Below Android 12 there is no blur at all, so it is always on.",
+    "Dialogs, sheets and menus are separate windows that cannot blur the page: sheets, alerts and menus sit on a solid surface and the context menu dims instead of blurring.",
+    "Adaptive tint samples the backdrop at one eighth of its size every 300 ms and takes the 95th percentile of luminance, so it reacts a little late and in quarter steps.",
+    "Edge diffusion is a Haze blur with a gradient mask, not a progressive blur.",
+)
 
 @Composable
 private fun Label(text: String) {
