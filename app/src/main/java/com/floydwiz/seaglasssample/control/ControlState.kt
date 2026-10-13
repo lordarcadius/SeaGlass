@@ -16,31 +16,43 @@ enum class ThemeMode(val label: String) { System("System"), Light("Light"), Dark
 @Stable
 class ControlState(
     themeMode: ThemeMode = ThemeMode.System,
-    contrast: SeaGlassContrast = SeaGlassContrast.Standard,
+    contrast: SeaGlassContrast? = null,
     reduceTransparency: Boolean = false,
     dynamicColor: Boolean = false,
     seedRole: GlassRole = GlassRole.Aqua,
     layers: GlassLayers = GlassLayers.All,
+    autoReduceTransparency: Boolean = true,
 ) {
     var themeMode by mutableStateOf(themeMode)
+
+    /** Null follows the system contrast setting. */
     var contrast by mutableStateOf(contrast)
     var reduceTransparency by mutableStateOf(reduceTransparency)
+
+    /** Also reduce transparency while the system reports blur is off. */
+    var autoReduceTransparency by mutableStateOf(autoReduceTransparency)
     var dynamicColor by mutableStateOf(dynamicColor)
     var seedRole by mutableStateOf(seedRole)
     var layers by mutableStateOf(layers)
 
+    var systemContrast by mutableStateOf(SeaGlassContrast.Standard)
+    var blurEnabled by mutableStateOf(true)
+
+    val effectiveContrast: SeaGlassContrast get() = contrast ?: systemContrast
+    val effectiveReduceTransparency: Boolean get() = reduceTransparency || (autoReduceTransparency && !blurEnabled)
+
     companion object {
         val Saver: Saver<ControlState, List<Any>> = Saver(
             save = { listOf(
-                    it.themeMode.name, it.contrast.name, it.reduceTransparency, it.dynamicColor, it.seedRole.name,
+                    it.themeMode.name, it.contrast?.name ?: SystemContrast, it.reduceTransparency, it.dynamicColor, it.seedRole.name,
                     it.layers.shadow, it.layers.caustic, it.layers.contact, it.layers.body,
-                    it.layers.light, it.layers.grain, it.layers.volume, it.layers.rim,
+                    it.layers.light, it.layers.grain, it.layers.volume, it.layers.rim, it.autoReduceTransparency,
                 )
             },
             restore = {
                 ControlState(
                     themeMode = ThemeMode.valueOf(it[0] as String),
-                    contrast = SeaGlassContrast.valueOf(it[1] as String),
+                    contrast = (it[1] as String).takeUnless { name -> name == SystemContrast }?.let(SeaGlassContrast::valueOf),
                     reduceTransparency = it[2] as Boolean,
                     dynamicColor = it[3] as Boolean,
                     seedRole = GlassRole.valueOf(it[4] as String),
@@ -49,11 +61,14 @@ class ControlState(
                         body = it[8] as Boolean, light = it[9] as Boolean, grain = it[10] as Boolean,
                         volume = it[11] as Boolean, rim = it[12] as Boolean,
                     ),
+                    autoReduceTransparency = it[13] as Boolean,
                 )
             },
         )
+
+        const val SystemContrast = "System"
     }
 }
 
 @Composable
-fun rememberControlState(): ControlState = rememberSaveable(saver = ControlState.Saver) { ControlState() }
+fun rememberControlState(initial: ControlState = ControlState()): ControlState = rememberSaveable(saver = ControlState.Saver) { initial }

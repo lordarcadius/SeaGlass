@@ -26,3 +26,4 @@ rootProject.name = "Sea Glass Sample"
 include(":app")
 include(":seaglass")
  
+include(":benchmark")

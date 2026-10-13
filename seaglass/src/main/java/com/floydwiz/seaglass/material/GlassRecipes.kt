@@ -7,6 +7,7 @@ import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.theme.SeaGlassContrast
 import kotlin.math.max
 import kotlin.math.min
+import androidx.compose.ui.util.lerp
 import kotlin.math.roundToInt
 
 /** Inputs shared by every finish; mirrors the `o` argument of `mat()` in recipes.js. */
@@ -16,7 +17,7 @@ internal class GlassContext(
     val contrast: SeaGlassContrast,
     val reduceTransparency: Boolean,
     val role: TonalTones,
-    val adaptive: Boolean,
+    val adaptive: Float,
     val tinted: Boolean,
 ) {
     val level get() = contrast.ordinal
@@ -112,10 +113,10 @@ internal object GlassRecipes {
         var ta = c.tintBoost
         return when (finish) {
             GlassFinish.Glass -> {
-                if (c.adaptive && dark && ta < 0.3f) ta = 0.3f
+                if (c.adaptive > 0f && dark) ta = maxOf(ta, 0.3f * c.adaptive)
                 if (dark) {
                     Body.Backdrop(
-                        20f, 1.8f, if (c.adaptive) 0.9f else 1.25f,
+                        20f, 1.8f, lerp(1.25f, 0.9f, c.adaptive),
                         listOf(lg(p[40].alpha(0.52f + ta), p[30].alpha(0.38f + ta), p[30].alpha(0.3f + ta))),
                     )
                 } else {
@@ -133,10 +134,10 @@ internal object GlassRecipes {
             }
 
             GlassFinish.Frost -> {
-                if (c.adaptive && dark && ta < 0.3f) ta = 0.3f
+                if (c.adaptive > 0f && dark) ta = maxOf(ta, 0.3f * c.adaptive)
                 if (dark) {
                     Body.Backdrop(
-                        14f, 1.6f, if (c.adaptive) 0.9f else 1.15f,
+                        14f, 1.6f, lerp(1.15f, 0.9f, c.adaptive),
                         listOf(lg(p[40].alpha(0.46f + ta), p[30].alpha(0.36f + ta), p[30].alpha(0.32f + ta))),
                     )
                 } else {
@@ -160,7 +161,7 @@ internal object GlassRecipes {
                     1 -> 0.6f
                     else -> 0f
                 }
-                if (c.adaptive && smoke == 0f) smoke = 0.6f
+                smoke = maxOf(smoke, 0.6f * c.adaptive)
                 if (smoke > 0f) {
                     Body.Backdrop(
                         16f, 1.5f, 1f,

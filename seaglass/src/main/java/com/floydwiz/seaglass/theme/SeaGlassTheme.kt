@@ -17,6 +17,7 @@ import com.floydwiz.seaglass.color.SeaGlassPalettes
 import com.floydwiz.seaglass.color.SeaGlassRolePalettes
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.color.dynamicRolePalettes
+import com.floydwiz.seaglass.color.withContrast
 import com.floydwiz.seaglass.material.GlassLayers
 import com.floydwiz.seaglass.material.LocalGlassClock
 import com.floydwiz.seaglass.material.LocalGlassLayers
@@ -54,6 +55,7 @@ fun SeaGlassTheme(
     val palettes = remember(dynamicColor, context) {
         if (dynamicColor) dynamicRolePalettes(context) else SeaGlassRolePalettes.Static
     }
+    val contrastScheme = remember(colorScheme, contrast, dark, palettes, seedRole) { colorScheme.withContrast(contrast, dark, palettes[seedRole]) }
 
     val clockOwned = LocalClockOwned.current
     val motionScale = if (clockOwned) LocalMotionScale.current else rememberAnimatorScale()
@@ -72,6 +74,6 @@ fun SeaGlassTheme(
         LocalRolePalettes provides palettes,
         LocalGlassRole provides palettes[seedRole],
     ) {
-        MaterialTheme(colorScheme = colorScheme, typography = SeaGlassTypography, content = content)
+        MaterialTheme(colorScheme = contrastScheme, typography = SeaGlassTypography, content = content)
     }
 }

@@ -25,6 +25,11 @@ android {
                 enable = false
             }
         }
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

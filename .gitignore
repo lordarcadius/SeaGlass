@@ -53,3 +53,4 @@ Thumbs.db
 # Verification screenshots
 # --------------------------
 /screenshots/
+__pycache__/

@@ -45,8 +45,8 @@ fun GlassSurface(
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val interaction = rememberGlassInteraction(finish, enabled, source, reactsTo, pressScale)
-    val adaptive = adaptive || LocalAdaptiveTint.current
     val dark = LocalSeaGlassDark.current
+    val adaptiveTint = rememberAdaptive(adaptive, if (dark) darkBrightnessLift(finish) else 1f)
     val resolvedContent = when {
         interaction.disabled -> disabledContentColor(dark)
         contentColor != null -> contentColor
@@ -65,19 +65,28 @@ fun GlassSurface(
     CompositionLocalProvider(LocalContentColor provides resolvedContent) {
         if (magnify) {
             Box(
-                modifier.then(interactive).seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.Frame),
+                modifier.then(adaptiveTint.boundsModifier).then(interactive).seaGlass(interaction, shape, role, tinted, adaptiveTint.amount, resolvedContent, Stages.Frame),
                 contentAlignment,
             ) {
-                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.Body, magnifier))
-                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.Inner))
+                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptiveTint.amount, resolvedContent, Stages.Body, magnifier))
+                Box(Modifier.matchParentSize().seaGlass(interaction, shape, role, tinted, adaptiveTint.amount, resolvedContent, Stages.Inner))
                 content()
             }
         } else {
             Box(
-                modifier.then(interactive).seaGlass(interaction, shape, role, tinted, adaptive, resolvedContent, Stages.All),
+                modifier.then(adaptiveTint.boundsModifier).then(interactive).seaGlass(interaction, shape, role, tinted, adaptiveTint.amount, resolvedContent, Stages.All),
                 contentAlignment,
                 content = content,
             )
         }
     }
+}
+
+/** How much a finish brightens its backdrop on dark themes (the brightness of the recipe), for adaptive tint. */
+private fun darkBrightnessLift(finish: GlassFinish): Float = when (finish) {
+    GlassFinish.Glass -> 1.25f
+    GlassFinish.Frost -> 1.15f
+    GlassFinish.Clear -> 1.55f
+    GlassFinish.Lens -> 1.65f
+    else -> 1f
 }

@@ -153,7 +153,7 @@ fun Modifier.seaGlass(
     val interaction = rememberGlassInteraction(finish, enabled, interactionSource)
     val dark = LocalSeaGlassDark.current
     val content = if (interaction.disabled) disabledContentColor(dark) else glassContentColor(interaction.finish, role, dark)
-    return seaGlass(interaction, shape, role, tinted, adaptive, content, Stages.All)
+    return seaGlass(interaction, shape, role, tinted, if (adaptive) 1f else 0f, content, Stages.All)
 }
 
 @Composable
@@ -162,7 +162,7 @@ internal fun Modifier.seaGlass(
     shape: SeaGlassShape,
     role: TonalTones,
     tinted: Boolean,
-    adaptive: Boolean,
+    adaptive: Float,
     contentColor: Color,
     stages: Stages,
     bodyTransform: Modifier = Modifier,

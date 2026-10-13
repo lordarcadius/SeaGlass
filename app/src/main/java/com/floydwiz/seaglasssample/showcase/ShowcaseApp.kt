@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -36,7 +37,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.theme.SeaGlassTheme
+import com.floydwiz.seaglass.theme.rememberCrossWindowBlurEnabled
+import com.floydwiz.seaglass.theme.rememberSystemContrast
 import com.floydwiz.seaglasssample.control.ControlSheet
+import com.floydwiz.seaglasssample.control.ControlState
 import com.floydwiz.seaglasssample.control.LocalControls
 import com.floydwiz.seaglasssample.control.ThemeMode
 import com.floydwiz.seaglasssample.control.rememberControlState
@@ -72,8 +76,14 @@ private fun TabletMailStage() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowcaseApp() {
-    val controls = rememberControlState()
+fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: String? = null) {
+    val controls = rememberControlState(initialControls)
+    val systemContrast = rememberSystemContrast()
+    val blurEnabled = rememberCrossWindowBlurEnabled()
+    SideEffect {
+        controls.systemContrast = systemContrast
+        controls.blurEnabled = blurEnabled
+    }
     val dark = when (controls.themeMode) {
         ThemeMode.System -> isSystemInDarkTheme()
         ThemeMode.Light -> false
@@ -89,8 +99,8 @@ fun ShowcaseApp() {
 
     SeaGlassTheme(
         dark = dark,
-        contrast = controls.contrast,
-        reduceTransparency = controls.reduceTransparency,
+        contrast = controls.effectiveContrast,
+        reduceTransparency = controls.effectiveReduceTransparency,
         dynamicColor = controls.dynamicColor,
         seedRole = controls.seedRole,
         layers = controls.layers,
@@ -125,7 +135,7 @@ fun ShowcaseApp() {
             },
         ) { padding ->
             CompositionLocalProvider(LocalControls provides controls) {
-            NavHost(navController, startDestination = Destinations.CATALOGUE) {
+            NavHost(navController, startDestination = startRoute ?: Destinations.CATALOGUE) {
                 composable(Destinations.CATALOGUE) {
                     CatalogueHome(padding) { navController.navigate(it.route) }
                 }

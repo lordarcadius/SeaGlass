@@ -18,6 +18,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassBackdrop
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
+import com.floydwiz.seaglass.material.LocalAdaptiveTint
 import com.floydwiz.seaglass.material.glassAccent
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalRolePalettes
@@ -91,16 +93,21 @@ fun InCallScreen(onEnd: () -> Unit) {
                     }.blur(34.dp),
                     alignment = BiasAlignment(-0.47f, 0f),
                     contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.colorMatrix(saturateBrightness(1.5f, if (dark) 0.45f else 1.08f)),
+                    colorFilter = ColorFilter.colorMatrix(saturateBrightness(1.5f, if (dark) 0.4f else 1.08f)),
                 )
                 Box(
                     Modifier.fillMaxSize().background(
-                        Brush.verticalGradient(0f to surface.copy(alpha = 0.62f), 0.45f to surface.copy(alpha = 0.28f), 1f to surface.copy(alpha = 0.66f)),
+                        Brush.verticalGradient(
+                            0f to surface.copy(alpha = if (dark) 0.72f else 0.62f),
+                            0.45f to surface.copy(alpha = if (dark) 0.42f else 0.28f),
+                            1f to surface.copy(alpha = if (dark) 0.7f else 0.66f),
+                        ),
                     ),
                 )
             }
         },
     ) {
+        CompositionLocalProvider(LocalAdaptiveTint provides true) {
         Column(Modifier.fillMaxSize().navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
             GlassSurface(
                 GlassFinish.Clear, Modifier.belowStatusBar(60.dp).size(164.dp, 34.dp), SeaGlassShape.Capsule,
@@ -147,6 +154,7 @@ fun InCallScreen(onEnd: () -> Unit) {
                 ) { SymbolIcon("call_end", size = 34.dp, fill = true, tint = LocalContentColor.current, contentDescription = "End call") }
                 GlassIconButton("more_horiz", {}, size = 58.dp, contentDescription = "More")
             }
+        }
         }
     }
 }

@@ -41,9 +41,10 @@ fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
                 Segmented(ThemeMode.entries, state.themeMode, { it.label }) { state.themeMode = it }
             }
             Section("Contrast") {
-                Segmented(SeaGlassContrast.entries, state.contrast, { it.name }) { state.contrast = it }
+                Segmented(listOf<SeaGlassContrast?>(null) + SeaGlassContrast.entries, state.contrast, { it?.name ?: "System" }) { state.contrast = it }
             }
             SwitchRow("Reduce transparency", state.reduceTransparency) { state.reduceTransparency = it }
+            SwitchRow("Reduce when system blur is off", state.autoReduceTransparency) { state.autoReduceTransparency = it }
             SwitchRow("Dynamic colour", state.dynamicColor) { state.dynamicColor = it }
             Section("Seed role") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

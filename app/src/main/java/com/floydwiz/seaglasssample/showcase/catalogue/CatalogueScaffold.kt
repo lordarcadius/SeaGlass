@@ -113,8 +113,8 @@ fun BoardTheme(dark: Boolean, content: @Composable () -> Unit) {
     val controls = LocalControls.current
     SeaGlassTheme(
         dark = dark,
-        contrast = controls.contrast,
-        reduceTransparency = controls.reduceTransparency,
+        contrast = controls.effectiveContrast,
+        reduceTransparency = controls.effectiveReduceTransparency,
         dynamicColor = controls.dynamicColor,
         seedRole = controls.seedRole,
         layers = controls.layers,
