@@ -3,6 +3,7 @@ package com.floydwiz.seaglass.material
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +36,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -47,9 +47,8 @@ internal val LocalBackdropRank = staticCompositionLocalOf { BackdropRank.Content
 
 private const val TargetBlurSigma = 4.5f
 private const val MaxDownscale = 8
-private const val MaxVariants = 10
 
-private data class BlurKey(val blur: Float, val saturation: Float, val brightness: Float, val includesLayer: Boolean)
+internal data class BlurKey(val blur: Float, val saturation: Float, val brightness: Float, val includesLayer: Boolean)
 
 private class BlurVariant(val low: GraphicsLayer, val blurred: GraphicsLayer) {
     var downscale = 1
@@ -63,7 +62,8 @@ private class BlurVariant(val low: GraphicsLayer, val blurred: GraphicsLayer) {
  * - A variant is one blur radius and colour matrix over base (and layer, for elements above it). It is captured
  *   at 1/[MaxDownscale] to 1x scale, blurred by a RenderEffect and cached in an offscreen layer, so its cost does not
  *   depend on how many elements read it. HWUI refreshes it when anything inside a source changes.
- * - Blur radius and colours are quantised and the number of variants is capped, so a slider cannot create layers without end.
+ * - Blur radius and colours are quantised. A variant exists only while an element holds its key ([acquire] and
+ *   [release]), so a slider that changes the radius every frame frees the layers it leaves behind.
  */
 @Stable
 internal class GlassBackdropState(private val graphicsContext: GraphicsContext) {
@@ -73,6 +73,27 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
     var size by mutableStateOf(IntSize.Zero)
     var coordinates: LayoutCoordinates? = null
     private val variants = HashMap<BlurKey, BlurVariant>()
+    private val holders = HashMap<BlurKey, Int>()
+
+    fun keyFor(blur: Float, saturation: Float, brightness: Float, includesLayer: Boolean) =
+        BlurKey(quantise(blur, 2f), quantise(saturation, 100f), quantise(brightness, 100f), includesLayer && hasLayerSource)
+
+    fun acquire(key: BlurKey) {
+        holders[key] = (holders[key] ?: 0) + 1
+    }
+
+    fun release(key: BlurKey) {
+        val left = (holders[key] ?: return) - 1
+        if (left > 0) {
+            holders[key] = left
+            return
+        }
+        holders.remove(key)
+        variants.remove(key)?.let {
+            graphicsContext.releaseGraphicsLayer(it.low)
+            graphicsContext.releaseGraphicsLayer(it.blurred)
+        }
+    }
 
     fun release() {
         graphicsContext.releaseGraphicsLayer(base)
@@ -82,6 +103,7 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
             graphicsContext.releaseGraphicsLayer(it.blurred)
         }
         variants.clear()
+        holders.clear()
     }
 
     /** Position of [consumer] inside the backdrop, or null when it is in another window or not attached. */
@@ -92,8 +114,9 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
     }
 
     /** Draws the blurred backdrop so that the point at [origin] in the backdrop lands at the scope's top-left. */
-    fun DrawScope.drawBlurred(origin: Offset, blur: Float, saturation: Float, brightness: Float, includesLayer: Boolean) {
-        val variant = variantFor(BlurKey(quantise(blur, 2f), quantise(saturation, 100f), quantise(brightness, 100f), includesLayer && hasLayerSource), density)
+    fun DrawScope.drawBlurred(origin: Offset, key: BlurKey) {
+        if (key !in holders) return
+        val variant = variantFor(key, density)
         if (variant.size == IntSize.Zero) return
         val factor = variant.downscale.toFloat()
         translate(-origin.x, -origin.y) { scale(factor, factor, pivot = Offset.Zero) { drawLayer(variant.blurred) } }
@@ -101,12 +124,7 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
 
     private fun quantise(value: Float, steps: Float) = (value * steps).roundToInt() / steps
 
-    private fun variantFor(requested: BlurKey, density: Float): BlurVariant {
-        val key = if (requested in variants || variants.size < MaxVariants) {
-            requested
-        } else {
-            variants.keys.filter { it.includesLayer == requested.includesLayer }.minByOrNull { abs(it.blur - requested.blur) + abs(it.saturation - requested.saturation) + abs(it.brightness - requested.brightness) } ?: requested
-        }
+    private fun variantFor(key: BlurKey, density: Float): BlurVariant {
         val variant = variants.getOrPut(key) { BlurVariant(graphicsContext.createGraphicsLayer(), graphicsContext.createGraphicsLayer()) }
         if (variant.size != size || variant.density != density) record(variant, key, density)
         return variant
@@ -163,7 +181,14 @@ internal fun Modifier.backdropBlur(
 ): Modifier {
     val state = backdrop?.takeIf { rank != BackdropRank.Backdrop }
     val origin = remember { mutableStateOf(Offset.Unspecified) }
-    val draw = remember(state, rank, blur, saturation, brightness, fills, mask) {
+    val key = state?.keyFor(blur, saturation, brightness, rank == BackdropRank.Content)
+    if (state != null && key != null) {
+        DisposableEffect(state, key) {
+            state.acquire(key)
+            onDispose { state.release(key) }
+        }
+    }
+    val draw = remember(state, rank, key, fills, mask) {
         val tracked = if (state != null) {
             Modifier.onGloballyPositioned { origin.value = state.offsetOf(it) ?: Offset.Unspecified }
         } else {
@@ -171,15 +196,14 @@ internal fun Modifier.backdropBlur(
         }
         tracked.drawBehind {
             val at = origin.value
-            if (state != null && at.isSpecified && state.size != IntSize.Zero) {
-                val includesLayer = rank == BackdropRank.Content
+            if (state != null && key != null && at.isSpecified && state.size != IntSize.Zero) {
                 val bounds = Rect(Offset.Zero, size)
                 with(state) {
                     if (mask == null) {
-                        drawBlurred(at, blur, saturation, brightness, includesLayer)
+                        drawBlurred(at, key)
                     } else {
                         drawContext.canvas.saveLayer(bounds, Paint())
-                        drawBlurred(at, blur, saturation, brightness, includesLayer)
+                        drawBlurred(at, key)
                         drawRect(brush = mask, blendMode = BlendMode.DstIn)
                         drawContext.canvas.restore()
                     }
