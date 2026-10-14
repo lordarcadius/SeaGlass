@@ -46,6 +46,7 @@ Thumbs.db
 # --------------------------
 # Secrets & Signing
 # --------------------------
+keystore.properties
 #*.jks
 #*.keystore
 #google-services.json

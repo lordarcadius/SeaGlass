@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+val keystoreProperties = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.reader()?.use { load(it) }
+}
+
+fun signingCredential(property: String, environment: String): String? =
+    keystoreProperties.getProperty(property) ?: System.getenv(environment)
 
 android {
     namespace = "com.floydwiz.seaglasssample"
@@ -22,22 +31,25 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("keys/ReleaseKey.jks")
-            storePassword = "primebook123"
-            keyAlias = "ReleaseKey"
-            keyPassword = "primebook123"
+            storePassword = signingCredential("storePassword", "SEAGLASS_STORE_PASSWORD")
+            keyAlias = signingCredential("keyAlias", "SEAGLASS_KEY_ALIAS") ?: "ReleaseKey"
+            keyPassword = signingCredential("keyPassword", "SEAGLASS_KEY_PASSWORD")
         }
     }
+
+    val releaseSigning = signingConfigs.getByName("release").takeIf { it.storePassword != null && it.keyPassword != null }
+    if (releaseSigning == null) logger.warn("Release signing credentials not found; add keystore.properties (see keystore.properties.example). Release builds will be unsigned.")
 
     buildTypes {
         release {
             optimization {
                 enable = true
             }
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = releaseSigning
         }
         create("benchmark") {
             initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = releaseSigning
             matchingFallbacks += "release"
         }
     }

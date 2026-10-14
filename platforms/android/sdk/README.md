@@ -22,11 +22,11 @@ dependencies {
 }
 ```
 
-**As AAR files**: run `./gradlew :sdk:tokens:assembleRelease :sdk:seaglass:assembleRelease` from `platforms/android`, then add `sdk/tokens/build/outputs/aar/tokens-release.aar` and `sdk/seaglass/build/outputs/aar/seaglass-release.aar` to the app. An AAR carries no dependency metadata, so the app also needs:
+**As AAR files**: run `./gradlew collectSdkAars` from `platforms/android`. It writes `build/sdk-aar/tokens-1.0.0-alpha01.aar` and `build/sdk-aar/seaglass-1.0.0-alpha01.aar`. Copy both to the app. An AAR carries no dependency metadata, so the app also needs:
 
 ```kotlin
 dependencies {
-    implementation(files("libs/tokens-release.aar", "libs/seaglass-release.aar"))
+    implementation(files("libs/tokens-1.0.0-alpha01.aar", "libs/seaglass-1.0.0-alpha01.aar"))
     implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.foundation:foundation")
@@ -73,4 +73,4 @@ Imports: `com.floydwiz.seaglass.theme.SeaGlassTheme`, `com.floydwiz.seaglass.mat
 
 ## Lab API
 
-Controls for exploring the material (per-layer switches, recipe overrides, the drift clock, board backdrops) are marked `@SeaGlassLabApi`. They are public, need an explicit opt-in, and can change without notice. The sample app opts in with `kotlin { compilerOptions { optIn.add("com.floydwiz.seaglass.SeaGlassLabApi") } }`.
+Hooks for exploring the material are marked `@SeaGlassLabApi`: `GlassLayers` / `LocalGlassLayers` (a switch per layer), `GlassOverrides` / `LocalGlassOverrides` (recipe overrides), `GlassClockScope` (restarts the light drift), `GlassRecipeInfo` (recipe values) and `SeaGlassTokens.Motion.slowdown`. The rendering code reads them, so they stay in the SDK; they are public, need an explicit opt-in, and can change without notice. The sample app opts in with `kotlin { compilerOptions { optIn.add("com.floydwiz.seaglass.SeaGlassLabApi") } }` and applies the layer switches with `LabTheme`, which provides `LocalGlassLayers` around `SeaGlassTheme`.
