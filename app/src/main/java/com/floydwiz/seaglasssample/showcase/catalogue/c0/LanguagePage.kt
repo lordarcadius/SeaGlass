@@ -183,7 +183,7 @@ private fun Spec(
 @Composable
 private fun finishRows(): List<FinishRow> = listOf(
     FinishRow("Glass", "seaGlass.material.glass", "Primary action, FAB, checked and on states, send.",
-        "Haze blur 18 dp + saturation 1.7, tint verticalGradient, three innerShadow layers, gradient Stroke rim, tinted dropShadow.") {
+        "Backdrop blur 18 dp + saturation 1.7, tint verticalGradient, three innerShadow layers, gradient Stroke rim, tinted dropShadow.") {
         Spec(GlassFinish.Glass, 104.dp, 44.dp, icon = "send", filled = true, label = "Send", fontSize = 15.sp)
         Spec(GlassFinish.Glass, 44.dp, 44.dp, shape = SeaGlassShape.Lens, icon = "favorite", filled = true, iconSize = 22.dp)
     },
@@ -218,7 +218,7 @@ private fun finishRows(): List<FinishRow> = listOf(
         Spec(GlassFinish.Well, 26.dp, 26.dp, shape = SeaGlassShape.Pane(9.dp), interactive = false)
     },
     FinishRow("Milk", "seaGlass.material.milk", "Cards, lists, sheets, alerts, menus, pickers.",
-        "Surface at 86–90% over a 30 dp Haze blur, gradient top rim, large soft shadow.") {
+        "Surface at 86–90% over a 30 dp backdrop blur, gradient top rim, large soft shadow.") {
         Spec(
             GlassFinish.Milk, 168.dp, 52.dp, shape = SeaGlassShape.Pane(20.dp), label = "Tide tables", fontSize = 14.sp,
             alignStart = true, padding = 16.dp, interactive = false,

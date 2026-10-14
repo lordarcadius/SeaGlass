@@ -19,6 +19,7 @@ private val AutoReduceTransparency = booleanPreferencesKey("autoReduceTransparen
 private val DynamicColor = booleanPreferencesKey("dynamicColor")
 private val Seed = stringPreferencesKey("seed")
 private val FpsOverlay = booleanPreferencesKey("fpsOverlay")
+private val LightDrift = booleanPreferencesKey("lightDrift")
 private val LayerKeys = listOf("shadow", "caustic", "contact", "body", "light", "grain", "volume", "rim").associateWith { booleanPreferencesKey("layer.$it") }
 
 private fun GlassLayers.flags() = mapOf(
@@ -42,6 +43,7 @@ suspend fun readControls(context: Context): ControlState {
         ),
         autoReduceTransparency = prefs[AutoReduceTransparency] ?: true,
         fpsOverlay = prefs[FpsOverlay] ?: false,
+        lightDrift = prefs[LightDrift] ?: false,
     )
 }
 
@@ -55,6 +57,7 @@ suspend fun writeControls(context: Context, state: ControlState) {
         prefs[DynamicColor] = state.dynamicColor
         prefs[Seed] = state.seedRole.name
         prefs[FpsOverlay] = state.fpsOverlay
+        prefs[LightDrift] = state.lightDrift
         state.layers.flags().forEach { (name, on) -> prefs[LayerKeys.getValue(name)] = on }
     }
 }

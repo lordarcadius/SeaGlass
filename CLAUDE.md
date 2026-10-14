@@ -24,7 +24,7 @@ If you need to see what a board looks like, ask me for a screenshot of that boar
 - `:seaglass` — Android library module: theme, tokens, palettes, shapes, `Modifier.seaGlass(...)`, all components. No app code.
 - `:app` — the showcase: catalogue (one destination per board C0–C7), the Phase 4 screens as working flows, and a control sheet (light/dark, contrast mode, reduce transparency, seed colour, dynamic colour, per-layer toggles, FPS overlay).
 - Package layout inside `:seaglass`: `color/`, `shape/`, `material/` (finishes and the glass modifier), `motion/`, `components/<group>/`, `theme/`.
-- Backdrop blur: **Haze** (`hazeSource` on the content, `hazeEffect` on each glass element). Everything else uses standard Compose APIs. See the mapping table in `reference/README.md`.
+- Backdrop blur: one shared, downscaled, blurred copy of each `GlassBackdrop` (`material/BackdropBlur.kt`) that every glass element crops with `drawLayer`. Haze was removed: it blurs once per element, about 16 render passes each. Everything else uses standard Compose APIs. See the mapping table in `reference/README.md` (its Haze rows are historical).
 - Shape morphs: `androidx.graphics:graphics-shapes`, or animate the eight elliptical radii directly.
 - Lens magnification: AGSL `RuntimeShader` on API 33+, falling back to scaling the content under the lens.
 
@@ -33,7 +33,6 @@ If you need to see what a board looks like, ask me for a screenshot of that boar
 - Check `gradle/libs.versions.toml` and the existing build files first; keep the project's AGP, Kotlin and compileSdk unless something below forces a bump.
 - Compose UI **1.9 or later** is required (for `Modifier.dropShadow` and `Modifier.innerShadow`). Use the newest stable Compose BOM that satisfies this.
 - Material 3 **1.4 or later** (Expressive APIs, `MotionScheme`).
-- Haze: newest stable release. Check its README for the current API before using it; do not rely on memory of older versions.
 - Glass blur needs API 31+. If the project's minSdk is lower, glass falls back to the reduce-transparency recipe below API 31.
 - Icons: Material Symbols Rounded (variable font with FILL, wght, opsz axes) bundled in `res/font`, drawn through a small `SymbolIcon` composable. If the font can't be downloaded, fall back to `Icons.Rounded` and tell me.
 - Type: Roboto Flex (bundled variable font or downloadable fonts).

@@ -44,6 +44,7 @@ fun SeaGlassTheme(
     dynamicColor: Boolean = false,
     seedRole: GlassRole = GlassRole.Aqua,
     layers: GlassLayers = GlassLayers.All,
+    lightDrift: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -61,7 +62,7 @@ fun SeaGlassTheme(
     val clockOwned = LocalClockOwned.current
     val motionScale = if (clockOwned) LocalMotionScale.current else rememberAnimatorScale()
     val motionEnabled = motionScale > 0f
-    val clock = if (clockOwned) LocalGlassClock.current else rememberGlassClock(running = motionEnabled && layers.light, motionScale = motionScale * SeaGlassTokens.Motion.slowdown)
+    val clock = if (clockOwned) LocalGlassClock.current else rememberGlassClock(running = motionEnabled && layers.light && lightDrift, motionScale = motionScale * SeaGlassTokens.Motion.slowdown)
 
     CompositionLocalProvider(
         LocalGlassLayers provides layers,

@@ -27,7 +27,6 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -36,16 +35,22 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.layer.CompositingStrategy
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.shadow.DropShadowPainter
 import androidx.compose.ui.graphics.shadow.InnerShadowPainter
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.shape.SeaGlassShape
@@ -53,13 +58,10 @@ import com.floydwiz.seaglass.theme.LocalGlassContrast
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalReduceTransparency
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
-import dev.chrisbanes.haze.HazeInput
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.HazeColorEffect
-import dev.chrisbanes.haze.blur.hazeBlur
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -171,7 +173,8 @@ internal fun Modifier.seaGlass(
     val contrast = LocalGlassContrast.current
     val reduceTransparency = LocalReduceTransparency.current
     val layers = LocalGlassLayers.current
-    val hazeState = LocalHazeState.current
+    val backdrop = LocalGlassBackdrop.current
+    val rank = LocalBackdropRank.current
     val clock = LocalGlassClock.current
     val motion = LocalMotionEnabled.current
     val grain = rememberGrainBrush()
@@ -182,7 +185,6 @@ internal fun Modifier.seaGlass(
         GlassContext(dark, contrast, reduceTransparency, role, adaptive, tinted, overrides)
     }
     val body = remember(finish, context) { GlassRecipes.body(finish, context) }
-    val hazeStyle = remember(body) { (body as? Body.Backdrop)?.toHazeStyle() }
 
     var chain: Modifier = this
     if (stages == Stages.All || stages == Stages.Frame) {
@@ -192,7 +194,7 @@ internal fun Modifier.seaGlass(
             .glassBehind(finish, context, shape, layers, interaction)
     }
     if (stages == Stages.All || stages == Stages.Body) {
-        chain = chain.clip(shape).then(bodyTransform).glassBody(body, hazeStyle, hazeState, layers.body)
+        chain = chain.clip(shape).then(bodyTransform).glassBody(body, backdrop, rank, layers.body)
     }
     if (stages == Stages.All || stages == Stages.Inner) {
         chain = chain.clip(shape).glassInner(finish, context, shape, layers, clock, motion, grain, interaction, contentColor)
@@ -209,22 +211,8 @@ private fun Modifier.glassTransform(interaction: GlassInteraction): Modifier = g
     }
 }
 
-private fun Body.Backdrop.toHazeStyle(): HazeBlurStyle {
-    val effects = buildList {
-        if (saturation != 1f || brightness != 1f) {
-            add(HazeColorEffect.colorFilter(ColorFilter.colorMatrix(saturationBrightness(saturation, brightness))))
-        }
-        fills.forEach { add(HazeColorEffect.tint(it)) }
-    }
-    return HazeBlurStyle {
-        blurRadius(blur.dp)
-        noiseFactor(0f)
-        colorEffects(effects)
-    }
-}
-
 /** CSS `saturate(s) brightness(b)` as one colour matrix. */
-private fun saturationBrightness(s: Float, b: Float) = ColorMatrix(
+internal fun saturationBrightness(s: Float, b: Float) = ColorMatrix(
     floatArrayOf(
         (0.213f + 0.787f * s) * b, (0.715f - 0.715f * s) * b, (0.072f - 0.072f * s) * b, 0f, 0f,
         (0.213f - 0.213f * s) * b, (0.715f + 0.285f * s) * b, (0.072f - 0.072f * s) * b, 0f, 0f,
@@ -233,10 +221,11 @@ private fun saturationBrightness(s: Float, b: Float) = ColorMatrix(
     ),
 )
 
+@Composable
 internal fun Modifier.glassBody(
     body: Body,
-    hazeStyle: HazeBlurStyle?,
-    hazeState: HazeState?,
+    backdrop: GlassBackdropState?,
+    rank: BackdropRank,
     enabled: Boolean,
 ): Modifier = when {
     !enabled -> this
@@ -246,11 +235,7 @@ internal fun Modifier.glassBody(
         val layer = radialLayer(body.cx, body.cy, body.rx, body.ry, body.stops, size.width, size.height)
         onDrawBehind { drawRadial(layer) }
     }
-    body is Body.Backdrop && hazeState != null && hazeStyle != null ->
-        hazeBlur(input = HazeInput.Sources(hazeState), style = hazeStyle)
-    body is Body.Backdrop -> drawWithCache {
-        onDrawBehind { body.fills.forEach { drawRect(it) } }
-    }
+    body is Body.Backdrop -> backdropBlur(backdrop, rank, body.blur, body.saturation, body.brightness, body.fills)
     else -> this
 }
 
@@ -325,17 +310,20 @@ private fun Modifier.glassBehind(
     val caustic = spec.caustic.takeIf { layers.caustic }?.let { ovalPaint(it, w, h, density) }
     val contact = spec.contact.takeIf { layers.contact }?.let { ovalPaint(it, w, h, density) }
 
+    val elementSize = size
     val shadowLayer = obtainGraphicsLayer()
-    shadowLayer.record(this, layoutDirection, intSize) {
+    val shadowPad = shadowSpec?.let { shadowBleed(it, size.width, size.height, density) } ?: 0
+    shadowLayer.recordCached(this, layoutDirection, intSize, shadowPad) {
         if (shadowSpec != null && shadowPainter != null) {
             withTransform({
                 translate(0f, shadowSpec.offsetY * density)
-                scale(shadowSpec.scaleX, shadowSpec.scaleY, pivot = Offset(size.width / 2f, size.height / 2f))
-            }) { with(shadowPainter) { draw(size) } }
+                scale(shadowSpec.scaleX, shadowSpec.scaleY, pivot = Offset(elementSize.width / 2f, elementSize.height / 2f))
+            }) { with(shadowPainter) { draw(elementSize) } }
         }
     }
     val ovalLayer = obtainGraphicsLayer()
-    ovalLayer.record(this, layoutDirection, intSize) {
+    val ovalPad = listOfNotNull(caustic, contact).maxOfOrNull { ovalBleed(it, size.width, size.height) } ?: 0
+    ovalLayer.recordCached(this, layoutDirection, intSize, ovalPad) {
         caustic?.let { drawOval(it) }
         contact?.let { drawOval(it) }
     }
@@ -358,13 +346,39 @@ private fun Modifier.glassBehind(
 }
 
 /**
+ * Records [block] into a layer that is rasterised once and then drawn as a texture, so its blurs do not run every frame.
+ * The layer extends [pad] px past [size] on every side because an offscreen layer clips what it draws outside its bounds.
+ */
+private fun GraphicsLayer.recordCached(density: Density, layoutDirection: LayoutDirection, size: IntSize, pad: Int, block: DrawScope.() -> Unit) {
+    compositingStrategy = CompositingStrategy.Offscreen
+    topLeft = IntOffset(-pad, -pad)
+    record(density, layoutDirection, IntSize(size.width + 2 * pad, size.height + 2 * pad)) {
+        translate(pad.toFloat(), pad.toFloat(), block)
+    }
+}
+
+private fun shadowBleed(shadow: ShadowSpec, width: Float, height: Float, density: Float): Int {
+    val blur = 3f * shadow.blur * density
+    val drop = abs(shadow.offsetY) * density
+    val growth = max(width * (shadow.scaleX - 1f), height * (shadow.scaleY - 1f)).coerceAtLeast(0f) / 2f
+    return ceil(blur + drop + growth).toInt() + BleedMargin
+}
+
+private fun ovalBleed(oval: OvalPaint, width: Float, height: Float): Int {
+    val over = maxOf(-oval.rect.left, -oval.rect.top, oval.rect.right - width, oval.rect.bottom - height, 0f)
+    return ceil(3f * oval.sigma + over).toInt() + BleedMargin
+}
+
+private const val BleedMargin = 2
+
+/**
  * Compose passes `Shadow.radius` straight to `BlurMaskFilter`, whose sigma is 0.57735 * radius + 0.5 px.
  * Returns the radius that gives [sigmaDp]; a CSS `filter: blur(R)` has sigma R, a box-shadow blur B has sigma B / 2.
  */
 private fun shadowRadiusDp(sigmaDp: Float, density: Float): Float =
     if (sigmaDp <= 0f) 0f else ((sigmaDp * density - 0.5f) / 0.57735f).coerceAtLeast(0f) / density
 
-private class OvalPaint(val paint: Paint, val rect: RectF)
+private class OvalPaint(val paint: Paint, val rect: RectF, val sigma: Float)
 
 private fun ovalPaint(spec: OvalSpec, w: Float, h: Float, density: Float): OvalPaint {
     val left = spec.insetFraction * w * density
@@ -389,7 +403,7 @@ private fun ovalPaint(spec: OvalSpec, w: Float, h: Float, density: Float): OvalP
     } else {
         paint.color = spec.color.toArgb()
     }
-    return OvalPaint(paint, rect)
+    return OvalPaint(paint, rect, sigma)
 }
 
 private fun DrawScope.drawOval(oval: OvalPaint) {
@@ -447,6 +461,7 @@ private fun Modifier.glassInner(
     val grainAlpha = if (layers.grain) spec.grain else 0f
 
     val staticLayer = obtainGraphicsLayer()
+    staticLayer.compositingStrategy = CompositingStrategy.Offscreen
     staticLayer.record(this, layoutDirection, IntSize(size.width.roundToInt(), size.height.roundToInt())) {
         if (grainAlpha > 0f) drawRect(grain, alpha = grainAlpha)
         for (inset in insets) with(inset) { draw(size) }

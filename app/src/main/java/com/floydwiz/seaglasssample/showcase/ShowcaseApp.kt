@@ -63,6 +63,7 @@ import com.floydwiz.seaglasssample.showcase.screens.inbox.InboxScreen
 import com.floydwiz.seaglasssample.showcase.screens.library.LibraryScreen
 import com.floydwiz.seaglasssample.showcase.screens.settings.SettingsScreen
 import com.floydwiz.seaglasssample.showcase.screens.tablet.TabletMailScreen
+import com.floydwiz.seaglasssample.showcase.spike.GlassStress
 import com.floydwiz.seaglasssample.showcase.spike.SpikeScreen
 
 private const val ExpandedWidthDp = 840
@@ -88,7 +89,7 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
             snapshotFlow {
                 listOf(
                     controls.themeMode, controls.contrast, controls.reduceTransparency, controls.autoReduceTransparency,
-                    controls.dynamicColor, controls.seedRole, controls.layers, controls.fpsOverlay,
+                    controls.dynamicColor, controls.seedRole, controls.layers, controls.fpsOverlay, controls.lightDrift,
                 )
             }.drop(1).collect { writeControls(context, controls) }
         }
@@ -119,6 +120,7 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
         dynamicColor = controls.dynamicColor,
         seedRole = controls.seedRole,
         layers = controls.layers,
+        lightDrift = controls.lightDrift,
     ) {
         val navController = rememberNavController()
         val backStack by navController.currentBackStackEntryAsState()
@@ -144,6 +146,7 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
                     composable(Destinations.DEMOS) {
                         DestinationList(padding, listOf("Demos" to Destinations.demos), { navController.navigate(it.route) })
                     }
+                    composable("perf/stress") { GlassStress((LocalActivity.current as? ComponentActivity)?.intent) }
                     composable(Destinations.spike.route) { SpikeScreen(controls, padding) }
                     composable(Destinations.components[0].route) { LanguagePage(padding) }
                     composable(Destinations.components[1].route) { ButtonsPage(padding) }

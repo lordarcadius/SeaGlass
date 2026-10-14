@@ -153,11 +153,12 @@ fun MaterialsLab(contentPadding: PaddingValues) {
 
 private val Approximations = listOf(
     "Lens magnification is a 1.12× AGSL shader on Android 13 and later; on Android 12 it is a 1.1× scale.",
-    "Backdrop saturation and brightness are a colour matrix applied inside Haze; saturation is not a native Haze setting.",
+    "Backdrop blur is computed once per backdrop at reduced resolution and cropped by each glass element, so it can differ slightly from a blur computed per element; saturation and brightness are a colour matrix applied to it.",
+    "The light pool rests at its starting position unless Animate light drift is on in the controls; the Motion lab always animates it.",
     "Reduce transparency replaces the blur with solid fills from the neutral palette, and is also entered when the system turns window blur off.",
     "Dialogs, sheets and menus are separate windows that cannot blur the page: sheets, alerts and menus sit on a solid surface and the context menu dims instead of blurring.",
     "Adaptive tint samples the backdrop at one sixteenth of its size at most every 800 ms and takes the 95th percentile of luminance, so it reacts a little late and in quarter steps.",
-    "Edge diffusion is a Haze blur with a gradient mask, not a progressive blur.",
+    "Edge diffusion is the blurred backdrop with a gradient mask, not a progressive blur.",
 )
 
 @Composable

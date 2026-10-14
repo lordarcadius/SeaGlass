@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
@@ -38,17 +39,15 @@ import com.floydwiz.seaglass.color.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
-import com.floydwiz.seaglass.material.LocalHazeState
+import com.floydwiz.seaglass.material.LocalBackdropRank
+import com.floydwiz.seaglass.material.LocalGlassBackdrop
 import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.material.LocalMotionScale
 import com.floydwiz.seaglass.material.SeaGlassTokens
+import com.floydwiz.seaglass.material.backdropBlur
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
-import dev.chrisbanes.haze.HazeInput
-import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.HazeColorEffect
-import dev.chrisbanes.haze.blur.hazeBlur
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -146,23 +145,16 @@ fun GlassFabMenu(
             }
         }
     }
-    val hazeState = LocalHazeState.current
+    val backdrop = LocalGlassBackdrop.current
+    val rank = LocalBackdropRank.current
     val tint = if (dark) SeaGlassTokens.Veil.FabMenuDark else SeaGlassTokens.Veil.FabMenuLight
-    val veilStyle = remember(dark) {
-        HazeBlurStyle {
-            blurRadius(6.dp)
-            noiseFactor(0f)
-            colorEffects(listOf(HazeColorEffect.tint(tint)))
-        }
-    }
-
     Box(modifier.fillMaxSize()) {
         if (melt > 0.01f) {
             Box(
                 Modifier
                     .fillMaxSize()
                     .alpha(meltShape)
-                    .then(if (hazeState != null) Modifier.hazeBlur(HazeInput.Sources(hazeState), veilStyle) else Modifier.background(tint))
+                    .then(if (backdrop != null) Modifier.backdropBlur(backdrop, rank, 6f, 1f, 1f, listOf(SolidColor(tint))) else Modifier.background(tint))
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onExpandedChange(false) },
             )
             Column(

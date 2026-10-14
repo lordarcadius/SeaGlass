@@ -299,7 +299,7 @@ fun MotionLab(contentPadding: PaddingValues) {
 
         CatalogueSection(
             "Light drift", "8 s alternate · ±5% by ±3%",
-            "The light pool inside every glass surface drifts on a shared clock; Replay gives this card a clock that starts again at zero.",
+            "This card always drifts, on a clock of its own that Replay restarts at zero; elsewhere the light pool drifts on a shared clock only when Animate light drift is on in the controls.",
         ) {
             ThemePanels { dark ->
                 Stage { replay ->

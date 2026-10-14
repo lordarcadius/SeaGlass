@@ -50,6 +50,7 @@ fun ControlSheet(state: ControlState, onDismiss: () -> Unit) {
             SwitchRow("Reduce transparency", state.reduceTransparency) { state.reduceTransparency = it }
             SwitchRow("Reduce when system blur is off", state.autoReduceTransparency) { state.autoReduceTransparency = it }
             SwitchRow("Dynamic colour", state.dynamicColor) { state.dynamicColor = it }
+            SwitchRow("Animate light drift", state.lightDrift) { state.lightDrift = it }
             Section("Seed role") {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     GlassRole.entries.forEach { role ->

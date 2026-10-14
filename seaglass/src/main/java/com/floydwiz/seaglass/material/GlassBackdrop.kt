@@ -4,19 +4,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
-
-/** Haze state glass reads its backdrop from; null means no backdrop is installed. */
-internal val LocalHazeState = staticCompositionLocalOf<HazeState?> { null }
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalGraphicsContext
 
 /**
  * Installs a backdrop for glass.
- * - [backdrop] is drawn first and marked as the source that glass blurs.
+ * - [backdrop] is drawn first and is the source that glass blurs.
  * - [layer] is optional page content drawn above it, for example a scrolling list that contains glass of its own. It is
  *   a second source above [backdrop]: glass inside it blurs [backdrop], while glass in [content] blurs both.
  * - [content] is drawn above both; glass elements in [content] blur what is behind them.
@@ -30,15 +27,24 @@ fun GlassBackdrop(
     layer: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val state = rememberHazeState()
+    val graphicsContext = LocalGraphicsContext.current
+    val state = remember { GlassBackdropState(graphicsContext) }
+    DisposableEffect(state) { onDispose { state.release() } }
+    state.hasLayerSource = layer != null
     val sampler = remember { BackdropSampler() }
-    CompositionLocalProvider(LocalHazeState provides state, LocalBackdropSampler provides sampler) {
-        Box(modifier) {
+    CompositionLocalProvider(LocalGlassBackdrop provides state, LocalBackdropSampler provides sampler) {
+        Box(modifier.onSizeChanged { state.size = it }.onGloballyPositioned { state.coordinates = it }) {
             Box(Modifier.matchParentSize().then(sampler.captureModifier())) {
-                Box(Modifier.matchParentSize().hazeSource(state, zIndex = 0f), content = backdrop)
-                if (layer != null) Box(Modifier.matchParentSize().hazeSource(state, zIndex = 1f), content = layer)
+                CompositionLocalProvider(LocalBackdropRank provides BackdropRank.Backdrop) {
+                    Box(Modifier.matchParentSize().backdropSource(state.base), content = backdrop)
+                }
+                if (layer != null) {
+                    CompositionLocalProvider(LocalBackdropRank provides BackdropRank.Layer) {
+                        Box(Modifier.matchParentSize().backdropSource(state.layer), content = layer)
+                    }
+                }
             }
-            content()
+            CompositionLocalProvider(LocalBackdropRank provides BackdropRank.Content) { content() }
         }
     }
 }
