@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalReduceTransparency
@@ -28,7 +28,7 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
  * - [onAdaptiveSample] reports the luminance sampled for adaptive tint, for inspection.
  */
 @Composable
-fun GlassSurface(
+public fun GlassSurface(
     finish: GlassFinish,
     modifier: Modifier = Modifier,
     shape: SeaGlassShape = SeaGlassShape.Capsule,

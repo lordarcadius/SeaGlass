@@ -11,15 +11,16 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.util.lerp
+import com.floydwiz.seaglass.SeaGlassLabApi
 
 /** Shared time source for the 8 s light drift; read only in draw so it never recomposes. */
 @Stable
-class GlassClock {
+internal class GlassClock {
     var seconds by mutableFloatStateOf(0f)
         internal set
 }
 
-val LocalGlassClock = staticCompositionLocalOf { GlassClock() }
+internal val LocalGlassClock = staticCompositionLocalOf { GlassClock() }
 
 internal val LocalClockOwned = staticCompositionLocalOf { false }
 
@@ -41,8 +42,9 @@ internal fun rememberGlassClock(running: Boolean, motionScale: Float): GlassCloc
 }
 
 /** Gives the glass below its own drift clock, which starts again at zero whenever [key] changes. */
+@SeaGlassLabApi
 @Composable
-fun GlassClockScope(key: Any?, content: @Composable () -> Unit) {
+public fun GlassClockScope(key: Any?, content: @Composable () -> Unit) {
     key(key) {
         val scale = LocalMotionScale.current * SeaGlassTokens.Motion.slowdown
         val clock = rememberGlassClock(LocalMotionEnabled.current, scale)

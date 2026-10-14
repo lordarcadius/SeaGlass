@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
 import com.floydwiz.seaglass.material.GlassSurface
@@ -28,9 +28,10 @@ import com.floydwiz.seaglass.material.LocalForcedGlassState
 import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-private val TrackWidth = 58.dp
-private val TrackHeight = 34.dp
+private val TrackWidth = SeaGlassSizeTokens.SwitchWidth
+private val TrackHeight = SeaGlassSizeTokens.SwitchHeight
 private val KnobSize = 28.dp
 
 /**
@@ -40,7 +41,7 @@ private val KnobSize = 28.dp
  * - Focus draws the halo on the track.
  */
 @Composable
-fun GlassSwitch(
+public fun GlassSwitch(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,

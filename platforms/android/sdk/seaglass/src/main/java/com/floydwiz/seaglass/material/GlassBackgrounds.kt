@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.floydwiz.seaglass.SeaGlassLabApi
 
 private class BackgroundSpot(val cx: Float, val cy: Float, val rx: Float, val ry: Float, val color: Color)
 
@@ -26,11 +27,12 @@ private val DarkSpots = listOf(
  * The canvas backdrop behind every specimen (`BGL` / `BGD` in recipes.js): a base colour,
  * four soft colour pools and faint 2 dp horizontal lines every 16 dp.
  */
-fun Modifier.glassBoardBackground(dark: Boolean): Modifier = drawWithCache {
+@SeaGlassLabApi
+public fun Modifier.glassBoardBackground(dark: Boolean): Modifier = drawWithCache {
     val spots = (if (dark) DarkSpots else LightSpots).map {
         radialLayer(it.cx, it.cy, it.rx, it.ry, listOf(0f to it.color, 0.7f to it.color.transparent), size.width, size.height)
     }
-    val base = if (dark) Color(0xFF090C12) else Color(0xFFEEF2F8)
+    val base = extendedColors(dark).backdrop
     val line = if (dark) rgba(227, 230, 238, 0.04f) else rgba(25, 28, 34, 0.05f)
     val lineHeight = 2.dp.toPx()
     val pitch = 16.dp.toPx()

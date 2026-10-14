@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.components.selection.trackAxisDrag
 import com.floydwiz.seaglass.material.GlassFinish
@@ -61,15 +61,16 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import com.floydwiz.seaglass.material.SeaGlassTokens.Content
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-class TabItem(val icon: String, val label: String)
+public class TabItem(public val icon: String, public val label: String)
 
 /** Minimized state driven by scroll direction; attach [connection] to the scrolling content with `nestedScroll`. */
 @Stable
-class TabBarState {
-    var minimized by mutableStateOf(false)
+public class TabBarState {
+    public var minimized: Boolean by mutableStateOf(false)
 
-    val connection = object : NestedScrollConnection {
+    public val connection: NestedScrollConnection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
             if (available.y < -12f) minimized = true else if (available.y > 12f) minimized = false
             return Offset.Zero
@@ -78,12 +79,12 @@ class TabBarState {
 }
 
 @Composable
-fun rememberTabBarState() = remember { TabBarState() }
+public fun rememberTabBarState(): TabBarState = remember { TabBarState() }
 
 private val TabWidth = 76.dp
 private const val FullId = "tabBarFull"
 private const val MinimizedId = "tabBarMinimized"
-private val BarHeight = 62.dp
+private val BarHeight = SeaGlassSizeTokens.TabBar
 
 /**
  * Floating tab bar: a clear capsule with the current tab as a frost lens and search in its own lens beside it.
@@ -92,7 +93,7 @@ private val BarHeight = 62.dp
  * - [tabWidth] is the width of each tab, 76 dp for four or more tabs and 92 dp for three.
  */
 @Composable
-fun GlassTabBar(
+public fun GlassTabBar(
     tabs: List<TabItem>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,

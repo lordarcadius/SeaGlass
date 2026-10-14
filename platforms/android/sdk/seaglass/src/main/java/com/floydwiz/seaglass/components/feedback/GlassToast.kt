@@ -35,7 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.buttons.GlassButton
 import com.floydwiz.seaglass.components.buttons.GlassButtonSize
 import com.floydwiz.seaglass.components.icon.SymbolIcon
@@ -47,8 +47,9 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import kotlinx.coroutines.delay
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-class ToastAction(val label: String, val onClick: () -> Unit)
+public class ToastAction(public val label: String, public val onClick: () -> Unit)
 
 /**
  * Toast: an ink pane, dark on light themes and pale on dark, so it reads as passing above everything.
@@ -56,7 +57,7 @@ class ToastAction(val label: String, val onClick: () -> Unit)
  * - The symbol and action use the role colour tuned for ink.
  */
 @Composable
-fun GlassToast(
+public fun GlassToast(
     message: String,
     modifier: Modifier = Modifier,
     icon: String = "check_circle",
@@ -70,7 +71,7 @@ fun GlassToast(
     val accent = if (dark) palette[40] else palette[80]
     GlassSurface(
         finish = GlassFinish.Ink,
-        modifier = modifier.fillMaxWidth().defaultMinSize(minHeight = if (detail != null) 68.dp else 52.dp).semantics { liveRegion = LiveRegionMode.Polite },
+        modifier = modifier.fillMaxWidth().defaultMinSize(minHeight = if (detail != null) 68.dp else SeaGlassSizeTokens.Toast).semantics { liveRegion = LiveRegionMode.Polite },
         shape = if (detail != null) SeaGlassShape.Pane(26.dp) else SeaGlassShape.Capsule,
         reactsTo = emptySet(),
         contentAlignment = Alignment.CenterStart,
@@ -96,7 +97,7 @@ fun GlassToast(
 
 /** Toast over media: clear glass with an avatar, a message and a glass action. */
 @Composable
-fun GlassMediaToast(
+public fun GlassMediaToast(
     message: String,
     actionLabel: String,
     onAction: () -> Unit,
@@ -120,21 +121,21 @@ fun GlassMediaToast(
     }
 }
 
-class ToastData(
-    val message: String,
-    val icon: String,
-    val role: GlassRole,
-    val detail: String?,
-    val action: ToastAction?,
+public class ToastData(
+    public val message: String,
+    public val icon: String,
+    public val role: GlassRole,
+    public val detail: String?,
+    public val action: ToastAction?,
 )
 
 /** Holds the toast on screen; each [show] replaces the current one and clears it after [durationMillis]. */
 @Stable
-class GlassToastState {
-    var current by mutableStateOf<ToastData?>(null)
+public class GlassToastState {
+    public var current: ToastData? by mutableStateOf<ToastData?>(null)
         private set
 
-    suspend fun show(
+    public suspend fun show(
         message: String,
         icon: String = "check_circle",
         role: GlassRole = GlassRole.Aqua,
@@ -147,14 +148,14 @@ class GlassToastState {
         current = null
     }
 
-    fun dismiss() {
+    public fun dismiss() {
         current = null
     }
 }
 
 /** Shows the toast from [state] at the bottom centre with a rise-and-fade. */
 @Composable
-fun GlassToastHost(state: GlassToastState, modifier: Modifier = Modifier) {
+public fun GlassToastHost(state: GlassToastState, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxWidth().padding(horizontal = 16.dp), contentAlignment = Alignment.BottomCenter) {
         AnimatedVisibility(
             visible = state.current != null,

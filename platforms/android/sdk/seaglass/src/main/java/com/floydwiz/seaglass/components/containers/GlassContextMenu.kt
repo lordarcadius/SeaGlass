@@ -25,7 +25,7 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
  * The veil is a dim tint because a dialog window cannot blur the window beneath it.
  */
 @Composable
-fun GlassContextMenu(
+public fun GlassContextMenu(
     onDismissRequest: () -> Unit,
     preview: @Composable () -> Unit,
     menu: @Composable ColumnScope.() -> Unit,

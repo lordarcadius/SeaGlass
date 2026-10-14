@@ -5,7 +5,7 @@
 ## Updating
 
 1. Download `tokens.json` from the design system and replace the file here.
-2. Run `./gradlew :sdk:seaglass:generateSeaGlassTokens` from `platforms/android`.
+2. Run `./gradlew :sdk:tokens:generateSeaGlassTokens` from `platforms/android`.
 3. Review the diff of the generated Kotlin and commit both.
 
 `verifySeaGlassTokens` runs before every build (`preBuild`) and in `check`. It fails, listing the files, whenever the committed Kotlin no longer matches these JSON files.

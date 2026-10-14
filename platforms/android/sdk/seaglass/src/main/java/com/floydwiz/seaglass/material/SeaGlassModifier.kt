@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassContrast
 import com.floydwiz.seaglass.theme.LocalGlassRole
@@ -64,13 +64,14 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import androidx.compose.runtime.ProvidableCompositionLocal
 
-enum class GlassState { Rest, Hover, Focus, Press, Disabled }
+public enum class GlassState { Rest, Hover, Focus, Press, Disabled }
 
-val AllInteractiveStates: Set<GlassState> = setOf(GlassState.Hover, GlassState.Focus, GlassState.Press)
+internal val AllInteractiveStates: Set<GlassState> = setOf(GlassState.Hover, GlassState.Focus, GlassState.Press)
 
 /** Forces the state of every glass element below it; used by the catalogue state picker. */
-val LocalForcedGlassState = compositionLocalOf<GlassState?> { null }
+public val LocalForcedGlassState: ProvidableCompositionLocal<GlassState?> = compositionLocalOf<GlassState?> { null }
 
 /**
  * Resolved interaction state of one glass element.
@@ -79,7 +80,7 @@ val LocalForcedGlassState = compositionLocalOf<GlassState?> { null }
  *   effects.fast so they never overshoot. All are animated fractions read only in draw/layer lambdas.
  */
 @Stable
-class GlassInteraction internal constructor(
+internal class GlassInteraction(
     val finish: GlassFinish,
     val disabled: Boolean,
     internal val hover: State<Float>,
@@ -99,7 +100,7 @@ class GlassInteraction internal constructor(
  * [pressScale] replaces the 0.96 press scale, for example 1.2 for a cluster item that bulges past its bar.
  */
 @Composable
-fun rememberGlassInteraction(
+internal fun rememberGlassInteraction(
     finish: GlassFinish,
     enabled: Boolean = true,
     interactionSource: InteractionSource? = null,
@@ -143,7 +144,7 @@ internal enum class Stages { All, Frame, Body, Inner }
  * Content placed in the element draws above all of it. Each layer obeys [LocalGlassLayers].
  */
 @Composable
-fun Modifier.seaGlass(
+public fun Modifier.seaGlass(
     finish: GlassFinish,
     shape: SeaGlassShape = SeaGlassShape.Capsule,
     role: TonalTones = LocalGlassRole.current,

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.SeaGlassTokens
@@ -31,11 +31,11 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 
-class ScopeItem(val label: String, val count: Int? = null)
+public class ScopeItem(public val label: String, public val count: Int? = null)
 
 /** Scope bar for filtering one list: a clear capsule 44 dp tall, a frost lens on the active scope, beads for counts. */
 @Composable
-fun GlassScopeBar(
+public fun GlassScopeBar(
     scopes: List<ScopeItem>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -84,7 +84,7 @@ fun GlassScopeBar(
 
 /** Page dots in a small well; the current page is a stretched 20×8 pearl. */
 @Composable
-fun GlassPageDots(count: Int, current: Int, modifier: Modifier = Modifier, role: TonalTones = LocalGlassRole.current) {
+public fun GlassPageDots(count: Int, current: Int, modifier: Modifier = Modifier, role: TonalTones = LocalGlassRole.current) {
     val dark = LocalSeaGlassDark.current
     GlassSurface(
         finish = GlassFinish.Well,

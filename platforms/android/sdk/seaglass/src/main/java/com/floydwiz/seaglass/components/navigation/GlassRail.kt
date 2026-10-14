@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
@@ -35,14 +35,16 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-class RailDestination(val icon: String, val label: String, val badge: String? = null)
+public class RailDestination(public val icon: String, public val label: String, public val badge: String? = null)
 
 /**
  * Tablet rail: a clear capsule 80 dp wide with the pebble action on top; the current destination is a frost lens.
  */
 @Composable
-fun GlassNavigationRail(
+public fun GlassNavigationRail(
     destinations: List<RailDestination>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -55,8 +57,8 @@ fun GlassNavigationRail(
     val ink = if (dark) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight
     val seaPink = LocalRolePalettes.current[GlassRole.SeaPink]
     val height = (104 + 72 * destinations.size + 12).dp
-    Box(modifier.size(80.dp, height)) {
-        GlassSurface(GlassFinish.Clear, Modifier.size(80.dp, height), SeaGlassShape.Pane(40.dp), role, reactsTo = emptySet())
+    Box(modifier.size(SeaGlassSizeTokens.Rail, height)) {
+        GlassSurface(GlassFinish.Clear, Modifier.size(SeaGlassSizeTokens.Rail, height), SeaGlassShape.Pane(40.dp), role, reactsTo = emptySet())
         if (onFabClick != null) {
             GlassSurface(
                 finish = GlassFinish.Glass,
@@ -71,7 +73,7 @@ fun GlassNavigationRail(
             Column(
                 Modifier
                     .offset(0.dp, (104 + 72 * index).dp)
-                    .width(80.dp)
+                    .width(SeaGlassSizeTokens.Rail)
                     .semantics { this.selected = selected }
                     .clickable(role = Role.Tab) { onSelect(index) },
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -99,11 +101,11 @@ fun GlassNavigationRail(
     }
 }
 
-class SidebarDestination(val icon: String, val label: String, val count: String? = null)
+public class SidebarDestination(public val icon: String, public val label: String, public val count: String? = null)
 
 /** Expanded sidebar: content, so a milk pane (272 dp wide, radius 32) with a frost row for the current destination. */
 @Composable
-fun GlassSidebar(
+public fun GlassSidebar(
     title: String,
     destinations: List<SidebarDestination>,
     selectedIndex: Int,
@@ -118,8 +120,8 @@ fun GlassSidebar(
     val height = (128 + 50 * destinations.size + 26).dp
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier.size(272.dp, height),
-        shape = SeaGlassShape.Pane(32.dp),
+        modifier = modifier.size(SeaGlassSizeTokens.Sidebar, height),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane32),
         role = role,
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopStart,

@@ -1,23 +1,25 @@
 package com.floydwiz.seaglass.theme
 
 import androidx.compose.material3.Typography
+import com.floydwiz.seaglass.tokens.SeaGlassTextStyles
 
-val SeaGlassTypography: Typography = Typography().let { base ->
+public val SeaGlassTypography: Typography = Typography().let { base ->
+    val tokens = SeaGlassTextStyles(RobotoFlex)
     base.copy(
-        displayLarge = base.displayLarge.copy(fontFamily = RobotoFlex),
-        displayMedium = base.displayMedium.copy(fontFamily = RobotoFlex),
-        displaySmall = base.displaySmall.copy(fontFamily = RobotoFlex),
-        headlineLarge = base.headlineLarge.copy(fontFamily = RobotoFlex),
-        headlineMedium = base.headlineMedium.copy(fontFamily = RobotoFlex),
-        headlineSmall = base.headlineSmall.copy(fontFamily = RobotoFlex),
-        titleLarge = base.titleLarge.copy(fontFamily = RobotoFlex),
-        titleMedium = base.titleMedium.copy(fontFamily = RobotoFlex),
-        titleSmall = base.titleSmall.copy(fontFamily = RobotoFlex),
-        bodyLarge = base.bodyLarge.copy(fontFamily = RobotoFlex),
-        bodyMedium = base.bodyMedium.copy(fontFamily = RobotoFlex),
-        bodySmall = base.bodySmall.copy(fontFamily = RobotoFlex),
-        labelLarge = base.labelLarge.copy(fontFamily = RobotoFlex),
-        labelMedium = base.labelMedium.copy(fontFamily = RobotoFlex),
-        labelSmall = base.labelSmall.copy(fontFamily = RobotoFlex),
+        displayLarge = base.displayLarge.merge(tokens.displayLarge),
+        displayMedium = base.displayMedium.merge(tokens.displayMedium),
+        displaySmall = base.displaySmall.merge(tokens.displaySmall),
+        headlineLarge = base.headlineLarge.merge(tokens.headlineLarge),
+        headlineMedium = base.headlineMedium.merge(tokens.headlineMedium),
+        headlineSmall = base.headlineSmall.merge(tokens.headlineSmall),
+        titleLarge = base.titleLarge.merge(tokens.titleLarge),
+        titleMedium = base.titleMedium.merge(tokens.titleMedium),
+        titleSmall = base.titleSmall.merge(tokens.titleSmall),
+        bodyLarge = base.bodyLarge.merge(tokens.bodyLarge),
+        bodyMedium = base.bodyMedium.merge(tokens.bodyMedium),
+        bodySmall = base.bodySmall.merge(tokens.bodySmall),
+        labelLarge = base.labelLarge.merge(tokens.labelLarge),
+        labelMedium = base.labelMedium.merge(tokens.labelMedium),
+        labelSmall = base.labelSmall.merge(tokens.labelSmall),
     )
 }

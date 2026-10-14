@@ -22,7 +22,7 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
  * - [fromBottom] mirrors it for content scrolling under a bottom bar.
  */
 @Composable
-fun GlassEdgeDiffusion(modifier: Modifier = Modifier, height: Dp = 84.dp, visible: Boolean = true, fromBottom: Boolean = false) {
+public fun GlassEdgeDiffusion(modifier: Modifier = Modifier, height: Dp = 84.dp, visible: Boolean = true, fromBottom: Boolean = false) {
     val dark = LocalSeaGlassDark.current
     val backdrop = LocalGlassBackdrop.current
     val rank = LocalBackdropRank.current

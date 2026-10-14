@@ -1,8 +1,10 @@
 package com.floydwiz.seaglass.color
 
 import androidx.compose.runtime.Immutable
+import com.floydwiz.seaglass.tokens.SeaGlassPalettes
+import com.floydwiz.seaglass.tokens.TonalTones
 
-enum class GlassRole(val label: String) {
+public enum class GlassRole(public val label: String) {
     Aqua("Aqua"),
     Seafoam("Seafoam"),
     Lavender("Lavender"),
@@ -14,15 +16,15 @@ enum class GlassRole(val label: String) {
 }
 
 @Immutable
-class SeaGlassRolePalettes(
+public class SeaGlassRolePalettes(
     private val roles: Map<GlassRole, TonalTones>,
-    val neutral: TonalTones,
-    val neutralVariant: TonalTones,
+    public val neutral: TonalTones,
+    public val neutralVariant: TonalTones,
 ) {
-    operator fun get(role: GlassRole): TonalTones = roles.getValue(role)
+    public operator fun get(role: GlassRole): TonalTones = roles.getValue(role)
 
-    companion object {
-        val Static = SeaGlassRolePalettes(
+    public companion object {
+        public val Static: SeaGlassRolePalettes = SeaGlassRolePalettes(
             roles = mapOf(
                 GlassRole.Aqua to SeaGlassPalettes.Aqua,
                 GlassRole.Seafoam to SeaGlassPalettes.Seafoam,

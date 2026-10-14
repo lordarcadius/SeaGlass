@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
@@ -57,8 +57,9 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-class SegmentedOption(val label: String? = null, val icon: String? = null)
+public class SegmentedOption(public val label: String? = null, public val icon: String? = null)
 
 /**
  * Options in one shared well; the chosen one is a frost lens.
@@ -67,7 +68,7 @@ class SegmentedOption(val label: String? = null, val icon: String? = null)
  * - Left and right arrow keys move the selection.
  */
 @Composable
-fun GlassSegmentedControl(
+public fun GlassSegmentedControl(
     options: List<SegmentedOption>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -103,7 +104,7 @@ fun GlassSegmentedControl(
     val dark = LocalSeaGlassDark.current
     Box(
         modifier
-            .size(segmentWidth * count + 8.dp, 40.dp)
+            .size(segmentWidth * count + 8.dp, SeaGlassSizeTokens.Segmented)
             .semantics { this.role = Role.RadioButton }
             .pointerInput(count, segmentPx, enabled) {
                 if (!enabled) return@pointerInput
@@ -136,7 +137,7 @@ fun GlassSegmentedControl(
     ) {
         GlassSurface(
             finish = GlassFinish.Well,
-            modifier = Modifier.size(segmentWidth * count + 8.dp, 40.dp),
+            modifier = Modifier.size(segmentWidth * count + 8.dp, SeaGlassSizeTokens.Segmented),
             shape = SeaGlassShape.Pane(20.dp),
             role = role,
             enabled = enabled,

@@ -3,12 +3,14 @@ package com.floydwiz.seaglass.material
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.theme.SeaGlassContrast
 import kotlin.math.max
 import kotlin.math.min
 import androidx.compose.ui.util.lerp
 import kotlin.math.roundToInt
+import com.floydwiz.seaglass.tokens.SeaGlassBlurTokens
+import com.floydwiz.seaglass.tokens.SeaGlassOpacityTokens
 
 /** Inputs shared by every finish; mirrors the `o` argument of `mat()` in recipes.js. */
 @Immutable
@@ -123,12 +125,12 @@ internal object GlassRecipes {
                 if (c.adaptive > 0f && dark) ta = maxOf(ta, 0.3f * c.adaptive)
                 if (dark) {
                     Body.Backdrop(
-                        20f, 1.8f, lerp(1.25f, 0.9f, c.adaptive),
+                        SeaGlassBlurTokens.GlassDark.value, 1.8f, lerp(1.25f, 0.9f, c.adaptive),
                         listOf(lg(p[40].alpha(0.52f + ta), p[30].alpha(0.38f + ta), p[30].alpha(0.3f + ta))),
                     )
                 } else {
                     Body.Backdrop(
-                        18f, 1.7f, 1.04f,
+                        SeaGlassBlurTokens.Glass.value, 1.7f, 1.04f,
                         listOf(
                             lg(
                                 p[80].alpha(0.66f + ta),
@@ -144,12 +146,12 @@ internal object GlassRecipes {
                 if (c.adaptive > 0f && dark) ta = maxOf(ta, 0.3f * c.adaptive)
                 if (dark) {
                     Body.Backdrop(
-                        14f, 1.6f, lerp(1.15f, 0.9f, c.adaptive),
+                        SeaGlassBlurTokens.Frost.value, 1.6f, lerp(1.15f, 0.9f, c.adaptive),
                         listOf(lg(p[40].alpha(0.46f + ta), p[30].alpha(0.36f + ta), p[30].alpha(0.32f + ta))),
                     )
                 } else {
                     Body.Backdrop(
-                        14f, 1.5f, 1.03f,
+                        SeaGlassBlurTokens.Frost.value, 1.5f, 1.03f,
                         listOf(
                             lg(
                                 mix(p[80], p[90], 0.6f).alpha(0.6f + ta),
@@ -168,22 +170,22 @@ internal object GlassRecipes {
                     1 -> 0.6f
                     else -> 0f
                 }
-                smoke = maxOf(smoke, 0.6f * c.adaptive)
+                smoke = maxOf(smoke, SeaGlassOpacityTokens.AdaptTintDark * c.adaptive)
                 if (smoke > 0f) {
                     Body.Backdrop(
-                        16f, 1.5f, 1f,
+                        SeaGlassBlurTokens.Clear.value, 1.5f, 1f,
                         listOf(lg(rgba(44, 49, 52, smoke), rgba(36, 41, 44, smoke), rgba(32, 37, 40, smoke))),
                     )
                 } else {
                     Body.Backdrop(
-                        16f, 2f, 1.55f + bo * 0.1f,
+                        SeaGlassBlurTokens.Clear.value, 2f, 1.55f + bo * 0.1f,
                         listOf(lg(white(0.2f + bo * 0.1f), white(0.1f + bo * 0.08f), white(0.12f + bo * 0.08f))),
                     )
                 }
             } else {
                 val bo = if (finish == GlassFinish.Lens) 1f else 0f
                 Body.Backdrop(
-                    16f, 1.8f, 1.06f + bo * 0.04f,
+                    SeaGlassBlurTokens.Clear.value, 1.8f, 1.06f + bo * 0.04f,
                     listOf(
                         lg(
                             white(0.6f + ta + bo * 0.12f),
@@ -199,13 +201,13 @@ internal object GlassRecipes {
                     Body.Solid(Color(0xFF2C3134))
                 } else {
                     Body.Backdrop(
-                        8f, 1.4f, 1f,
+                        SeaGlassBlurTokens.Pearl.value, 1.4f, 1f,
                         listOf(lg(rgba(242, 246, 248, 0.97f), rgba(224, 232, 236, 0.96f), rgba(206, 216, 221, 0.96f))),
                     )
                 }
             } else {
                 Body.Backdrop(
-                    8f, 1.4f, 1.02f,
+                    SeaGlassBlurTokens.Pearl.value, 1.4f, 1.02f,
                     listOf(lg(Color.White, rgba(252, 254, 255, 0.98f), rgba(240, 247, 250, 0.97f))),
                 )
             }
@@ -213,11 +215,11 @@ internal object GlassRecipes {
             GlassFinish.Fill -> when {
                 c.level == 2 -> Body.Solid(if (dark) p[80] else p[40])
                 dark -> Body.Backdrop(
-                    12f, 1.7f, 1.15f,
+                    SeaGlassBlurTokens.Fill.value, 1.7f, 1.15f,
                     listOf(lg(p[60].alpha(0.92f), mix(p[60], p[40], 0.4f).alpha(0.86f), p[40].alpha(0.82f))),
                 )
                 else -> Body.Backdrop(
-                    12f, 1.7f, 1f,
+                    SeaGlassBlurTokens.Fill.value, 1.7f, 1f,
                     listOf(
                         lg(
                             mix(p[40], p[60], 0.42f).alpha(0.96f),
@@ -230,24 +232,24 @@ internal object GlassRecipes {
 
             GlassFinish.Ink -> if (dark) {
                 Body.Backdrop(
-                    24f, 1.5f, 1.02f,
+                    SeaGlassBlurTokens.Ink.value, 1.5f, 1.02f,
                     listOf(lg(rgba(240, 244, 246, 0.95f), rgba(229, 235, 238, 0.93f), rgba(221, 228, 231, 0.93f))),
                 )
             } else {
                 Body.Backdrop(
-                    24f, 1.5f, 1f,
+                    SeaGlassBlurTokens.Ink.value, 1.5f, 1f,
                     listOf(lg(rgba(42, 48, 52, 0.92f), rgba(33, 38, 41, 0.9f), rgba(29, 34, 37, 0.9f))),
                 )
             }
 
             GlassFinish.Dry -> if (dark) {
                 Body.Backdrop(
-                    8f, 0.3f, 1f,
+                    SeaGlassBlurTokens.Dry.value, 0.3f, 1f,
                     listOf(lg(rgba(84, 90, 94, 0.4f), rgba(74, 80, 84, 0.34f), rgba(68, 74, 78, 0.32f))),
                 )
             } else {
                 Body.Backdrop(
-                    8f, 0.3f, 1.02f,
+                    SeaGlassBlurTokens.Dry.value, 0.3f, 1.02f,
                     listOf(lg(rgba(226, 231, 234, 0.74f), rgba(219, 225, 228, 0.66f), rgba(213, 220, 223, 0.64f))),
                 )
             }
@@ -283,19 +285,19 @@ internal object GlassRecipes {
                     else -> Brush.verticalGradient(listOf(p[80].alpha(0.28f), p[90].alpha(0.18f)))
                 }
                 Body.Backdrop(
-                    10f, 1.3f, if (dark) 0.9f else 1.02f,
+                    SeaGlassBlurTokens.Well.value, 1.3f, if (dark) 0.9f else 1.02f,
                     listOfNotNull(base, tint),
                 )
             }
 
             GlassFinish.Milk -> if (dark) {
                 Body.Backdrop(
-                    30f, 1.5f, 1f,
+                    SeaGlassBlurTokens.Milk.value, 1.5f, 1f,
                     listOf(lg(rgba(48, 54, 58, 0.9f), rgba(38, 43, 46, 0.88f), rgba(33, 38, 41, 0.88f))),
                 )
             } else {
                 Body.Backdrop(
-                    30f, 1.6f, 1.03f,
+                    SeaGlassBlurTokens.Milk.value, 1.6f, 1.03f,
                     listOf(lg(white(0.9f), rgba(250, 253, 254, 0.86f), rgba(244, 249, 251, 0.86f))),
                 )
             }
@@ -414,7 +416,7 @@ internal object GlassRecipes {
                         RadialSpec(0.72f, 1.00f, 0.52f, 0.42f, g.alpha(0.55f * ls)),
                     )
                 },
-                grain = grain(if (dark) 0.12f else 0.18f),
+                grain = grain(if (dark) 0.12f else SeaGlassOpacityTokens.GrainGlass),
                 insets = if (dark) {
                     listOf(
                         InsetSpec(0f, -hs * 0.2f, hs * 0.28f, -hs * 0.1f, g.alpha(0.42f * gs)),
@@ -445,7 +447,7 @@ internal object GlassRecipes {
                 caustic = null,
                 contact = null,
                 light = listOf(RadialSpec(0.30f, 0f, 0.70f, 0.60f, white((if (dark) 0.16f else 0.5f) * ls))),
-                grain = grain(if (dark) 0.1f else 0.15f),
+                grain = grain(if (dark) 0.1f else SeaGlassOpacityTokens.GrainFrost),
                 insets = listOf(
                     InsetSpec(0f, -hs * 0.16f, hs * 0.24f, -hs * 0.1f, g.alpha((if (dark) 0.3f else 0.6f) * gs)),
                 ),
@@ -503,7 +505,7 @@ internal object GlassRecipes {
                         RadialSpec(0.26f, 0f, 0.70f, 0.60f, white(0.85f * ls)),
                         RadialSpec(0.74f, 1f, 0.56f, 0.46f, rgba(236, 252, 255, r1(0.7f * ls * 100f) / 100f)),
                     ),
-                    grain = grain(0.12f),
+                    grain = grain(SeaGlassOpacityTokens.GrainClear),
                     insets = listOf(
                         InsetSpec(0f, -hs * 0.2f, hs * 0.28f, -hs * 0.1f, rgba(228, 250, 255, r1(0.9f * gs * 100f) / 100f)),
                         InsetSpec(0f, hs * 0.14f, hs * 0.22f, -hs * 0.12f, rgba(40, 70, 90, 0.1f)),
@@ -561,7 +563,7 @@ internal object GlassRecipes {
                     caustic = null,
                     contact = null,
                     light = emptyList(),
-                    grain = grain(if (dark) 0.05f else 0.07f),
+                    grain = grain(if (dark) 0.05f else SeaGlassOpacityTokens.GrainMilk),
                     insets = listOf(
                         InsetSpec(
                             0f, 0f, 0f, 0.5f,
@@ -687,7 +689,7 @@ internal object GlassRecipes {
                 caustic = null,
                 contact = null,
                 light = emptyList(),
-                grain = grain(if (dark) 0.18f else 0.3f),
+                grain = grain(if (dark) 0.18f else SeaGlassOpacityTokens.GrainDry),
                 insets = listOf(
                     InsetSpec(0f, 0f, 0f, 1f, if (dark) white(0.04f) else rgba(30, 45, 55, 0.06f)),
                 ),

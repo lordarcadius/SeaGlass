@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    `maven-publish`
 }
 
 android {
@@ -11,6 +12,7 @@ android {
 
     defaultConfig {
         minSdk = 31
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -20,11 +22,24 @@ android {
     buildFeatures {
         compose = true
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
-apply(from = rootProject.file("../../core/codegen/kotlin/seaglass-tokens.gradle.kts"))
+kotlin {
+    explicitApi()
+    compilerOptions {
+        optIn.add("com.floydwiz.seaglass.SeaGlassLabApi")
+    }
+}
+
+apply(from = rootProject.file("gradle/sdk-publishing.gradle.kts"))
 
 dependencies {
+    api(project(":sdk:tokens"))
     api(platform(libs.androidx.compose.bom))
     api(libs.androidx.compose.foundation)
     api(libs.androidx.compose.material3)

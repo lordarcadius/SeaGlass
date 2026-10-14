@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.buttons.GlassButton
 import com.floydwiz.seaglass.components.buttons.GlassButtonSize
 import com.floydwiz.seaglass.components.buttons.GlassButtonStyle
@@ -33,13 +33,14 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
 
 /**
  * Alert pane: milk, 320 dp wide, radius 34, a 52 dp glass icon lens, centred copy and full-width capsule buttons
  * (50 dp confirm in glass, 46 dp dismiss as plain).
  */
 @Composable
-fun GlassAlertPane(
+public fun GlassAlertPane(
     icon: String,
     title: String,
     message: String,
@@ -53,8 +54,8 @@ fun GlassAlertPane(
     val ink = if (LocalSeaGlassDark.current) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier.width(320.dp).background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(34.dp)),
-        shape = SeaGlassShape.Pane(34.dp),
+        modifier = modifier.width(320.dp).background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(SeaGlassRadiusTokens.Alert)),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Alert),
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopCenter,
     ) {
@@ -87,7 +88,7 @@ fun GlassAlertPane(
 
 /** Modal alert in a dialog window over a scrim. */
 @Composable
-fun GlassAlert(
+public fun GlassAlert(
     onDismissRequest: () -> Unit,
     icon: String,
     title: String,

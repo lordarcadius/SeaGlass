@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.lerp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
@@ -50,12 +50,15 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.floydwiz.seaglass.tokens.SeaGlassBlurTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSpacingTokens
 
-enum class FabSize(val dp: Dp) { Medium(56.dp), Large(80.dp), ExtraLarge(96.dp) }
+public enum class FabSize(public val dp: Dp) { Medium(SeaGlassSizeTokens.Fab), Large(SeaGlassSizeTokens.FabMedium), ExtraLarge(SeaGlassSizeTokens.FabLarge) }
 
 /** The one pebble-shaped glass in a layout: 56, 80 or 96 dp, symbol at 42% of the size. */
 @Composable
-fun GlassFab(
+public fun GlassFab(
     icon: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -80,7 +83,7 @@ fun GlassFab(
 
 /** Extended FAB: a 56 dp capsule with a symbol and a label. */
 @Composable
-fun GlassExtendedFab(
+public fun GlassExtendedFab(
     label: String,
     icon: String,
     onClick: () -> Unit,
@@ -92,7 +95,7 @@ fun GlassExtendedFab(
 ) {
     GlassSurface(
         finish = if (frost) GlassFinish.Frost else GlassFinish.Glass,
-        modifier = modifier.height(56.dp),
+        modifier = modifier.height(SeaGlassSizeTokens.Fab),
         shape = SeaGlassShape.Capsule,
         role = role,
         enabled = enabled,
@@ -106,7 +109,7 @@ fun GlassExtendedFab(
     }
 }
 
-class FabMenuItem(val icon: String, val label: String, val onClick: () -> Unit)
+public class FabMenuItem(public val icon: String, public val label: String, public val onClick: () -> Unit)
 
 /**
  * FAB with a menu. Fills the area it is placed in so the veil can cover the content behind it.
@@ -116,7 +119,7 @@ class FabMenuItem(val icon: String, val label: String, val onClick: () -> Unit)
  * - [contentPadding] insets the button and items, for example by the navigation bar, while the veil still fills the area.
  */
 @Composable
-fun GlassFabMenu(
+public fun GlassFabMenu(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     items: List<FabMenuItem>,
@@ -154,7 +157,7 @@ fun GlassFabMenu(
                 Modifier
                     .fillMaxSize()
                     .alpha(meltShape)
-                    .then(if (backdrop != null) Modifier.backdropBlur(backdrop, rank, 6f, 1f, 1f, listOf(SolidColor(tint))) else Modifier.background(tint))
+                    .then(if (backdrop != null) Modifier.backdropBlur(backdrop, rank, SeaGlassBlurTokens.Veil.value, 1f, 1f, listOf(SolidColor(tint))) else Modifier.background(tint))
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onExpandedChange(false) },
             )
             Column(
@@ -167,7 +170,7 @@ fun GlassFabMenu(
                     Box(
                         Modifier.graphicsLayer {
                             alpha = progress.coerceIn(0f, 1f)
-                            translationY = (1f - progress) * (index + 1) * 62.dp.toPx()
+                            translationY = (1f - progress) * (index + 1) * SeaGlassSpacingTokens.FabMenuStep.toPx()
                             scaleX = 0.7f + 0.3f * progress
                             scaleY = scaleX
                             transformOrigin = TransformOrigin(1f, 1f)

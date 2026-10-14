@@ -13,12 +13,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.ProvidableCompositionLocal
 
 /** System animator duration scale: 1 is normal, above 1 slows motion and 0 turns animation off. */
-val LocalMotionScale = staticCompositionLocalOf { 1f }
+public val LocalMotionScale: ProvidableCompositionLocal<Float> = staticCompositionLocalOf { 1f }
 
 /** False when animations are off (scale 0): loops and morphs stop and transitions become instant. */
-val LocalMotionEnabled = staticCompositionLocalOf { true }
+public val LocalMotionEnabled: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { true }
 
 private fun Context.readAnimatorScale(): Float =
     Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)

@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.containers.GlassMenu
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
@@ -40,7 +40,7 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
  * - [menu] is shown in a popup 12 dp under the button while [expanded].
  */
 @Composable
-fun GlassSplitButton(
+public fun GlassSplitButton(
     label: String,
     leadingIcon: String,
     onClick: () -> Unit,
@@ -67,7 +67,7 @@ fun GlassSplitButton(
 
 /** The two split pieces without the menu; the catalogue draws the open state with a static menu. */
 @Composable
-fun GlassSplitRow(
+public fun GlassSplitRow(
     label: String,
     leadingIcon: String,
     onClick: () -> Unit,

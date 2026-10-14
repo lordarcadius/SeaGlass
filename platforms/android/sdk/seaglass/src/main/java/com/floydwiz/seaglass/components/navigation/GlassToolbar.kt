@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
@@ -25,9 +25,10 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.color.GlassRole
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
 /** A toolbar tool; [danger] tints the symbol sea pink. */
-class ToolItem(val icon: String, val description: String, val danger: Boolean = false)
+public class ToolItem(public val icon: String, public val description: String, public val danger: Boolean = false)
 
 /**
  * Floating toolbar: tools share a clear capsule, the active tool is a frost lens and the confirm action is a
@@ -36,7 +37,7 @@ class ToolItem(val icon: String, val description: String, val danger: Boolean = 
  * - [confirmIcon] is the symbol on the confirm lens.
  */
 @Composable
-fun GlassFloatingToolbar(
+public fun GlassFloatingToolbar(
     tools: List<ToolItem>,
     selectedIndex: Int,
     onToolClick: (Int) -> Unit,
@@ -70,14 +71,14 @@ fun GlassFloatingToolbar(
         }
     }
     if (vertical) {
-        Box(modifier.size(56.dp, length)) {
-            GlassSurface(GlassFinish.Clear, Modifier.size(56.dp, length), SeaGlassShape.Pane(28.dp), role, reactsTo = emptySet())
+        Box(modifier.size(SeaGlassSizeTokens.Toolbar, length)) {
+            GlassSurface(GlassFinish.Clear, Modifier.size(SeaGlassSizeTokens.Toolbar, length), SeaGlassShape.Pane(28.dp), role, reactsTo = emptySet())
             Column(Modifier.padding(4.dp)) { Items() }
         }
     } else {
         Row(modifier, Arrangement.spacedBy(10.dp), Alignment.CenterVertically) {
-            Box(Modifier.size(length, 56.dp)) {
-                GlassSurface(GlassFinish.Clear, Modifier.size(length, 56.dp), SeaGlassShape.Capsule, role, reactsTo = emptySet())
+            Box(Modifier.size(length, SeaGlassSizeTokens.Toolbar)) {
+                GlassSurface(GlassFinish.Clear, Modifier.size(length, SeaGlassSizeTokens.Toolbar), SeaGlassShape.Capsule, role, reactsTo = emptySet())
                 Row(Modifier.padding(4.dp)) { Items() }
             }
             if (onConfirm != null) {

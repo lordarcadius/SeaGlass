@@ -25,7 +25,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
@@ -38,6 +38,7 @@ import com.floydwiz.seaglass.material.glassOnSurfaceVariant
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
 
 /**
  * Content card: a milk pane with 28 dp corners and a lit top edge.
@@ -46,13 +47,13 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
  * - Anything inset should use concentric corners: an 8 dp inset photo gets 20 dp.
  */
 @Composable
-fun GlassCard(
+public fun GlassCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     emphasized: Boolean = false,
     selected: Boolean = false,
     role: TonalTones = LocalGlassRole.current,
-    shape: SeaGlassShape = SeaGlassShape.Pane(28.dp),
+    shape: SeaGlassShape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane28),
     content: @Composable BoxScope.() -> Unit,
 ) {
     val ring = if (selected) Modifier.border(2.dp, glassAccent(role), shape) else Modifier
@@ -80,7 +81,7 @@ fun GlassCard(
 
 /** Clear caption pane laid over imagery (radius 20), for overlay cards and carousels. */
 @Composable
-fun GlassCaption(modifier: Modifier = Modifier, role: TonalTones = LocalGlassRole.current, content: @Composable BoxScope.() -> Unit) {
+public fun GlassCaption(modifier: Modifier = Modifier, role: TonalTones = LocalGlassRole.current, content: @Composable BoxScope.() -> Unit) {
     GlassSurface(
         finish = GlassFinish.Clear,
         modifier = modifier,
@@ -94,11 +95,11 @@ fun GlassCaption(modifier: Modifier = Modifier, role: TonalTones = LocalGlassRol
 
 /** Inset list: a milk pane with 26 dp corners; rows react without lifting and hairlines start at the text. */
 @Composable
-fun GlassInsetList(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+public fun GlassInsetList(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     GlassSurface(
         finish = GlassFinish.Milk,
         modifier = modifier,
-        shape = SeaGlassShape.Pane(26.dp),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.List),
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopStart,
     ) {
@@ -112,7 +113,7 @@ fun GlassInsetList(modifier: Modifier = Modifier, content: @Composable ColumnSco
  * - [leadingIcon] sits in a 32 dp glass tile with 11 dp corners, tinted by [leadingRole].
  */
 @Composable
-fun GlassListRow(
+public fun GlassListRow(
     title: String,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
@@ -152,7 +153,7 @@ fun GlassListRow(
                     GlassSurface(
                         finish = GlassFinish.Glass,
                         modifier = Modifier.size(32.dp),
-                        shape = SeaGlassShape.Pane(11.dp),
+                        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.IconTile),
                         role = leadingRole,
                         enabled = enabled,
                         reactsTo = emptySet(),

@@ -22,7 +22,7 @@ import com.floydwiz.seaglass.components.navigation.GlassPageDots
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GlassCarousel(
+public fun GlassCarousel(
     itemCount: Int,
     modifier: Modifier = Modifier,
     state: CarouselState = rememberCarouselState { itemCount },

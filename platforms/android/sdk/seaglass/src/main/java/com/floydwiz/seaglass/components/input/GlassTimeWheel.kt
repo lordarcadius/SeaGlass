@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.glassOnRole
@@ -37,6 +37,7 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlin.math.abs
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
 
 private val RowHeight = 40.dp
 
@@ -45,7 +46,7 @@ private val RowHeight = 40.dp
  * Values shrink and fade as they turn away from the band: 22 sp, 18 sp at 75%, 15 sp at 38%.
  */
 @Composable
-fun GlassTimeWheel(
+public fun GlassTimeWheel(
     hour: Int,
     minute: Int,
     pm: Boolean,
@@ -59,7 +60,7 @@ fun GlassTimeWheel(
     GlassSurface(
         finish = GlassFinish.Milk,
         modifier = modifier.size(340.dp, 232.dp),
-        shape = SeaGlassShape.Pane(32.dp),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane32),
         role = role,
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopStart,

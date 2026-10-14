@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.buttons.GlassButton
 import com.floydwiz.seaglass.components.buttons.GlassButtonSize
 import com.floydwiz.seaglass.components.buttons.GlassButtonStyle
@@ -35,13 +35,14 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
 
 /**
  * Bead badge: a small solid glass drop, never taller than 20 dp.
  * - No [text] draws a status dot of [dotSize]; a short count is a 20 dp circle and longer text widens it.
  */
 @Composable
-fun GlassBadge(
+public fun GlassBadge(
     modifier: Modifier = Modifier,
     text: String? = null,
     role: TonalTones = LocalRolePalettes.current[GlassRole.SeaPink],
@@ -64,7 +65,7 @@ fun GlassBadge(
 
 /** Plain tooltip: an ink capsule 32 dp tall. */
 @Composable
-fun GlassTooltip(text: String, modifier: Modifier = Modifier) {
+public fun GlassTooltip(text: String, modifier: Modifier = Modifier) {
     GlassSurface(
         finish = GlassFinish.Ink,
         modifier = modifier.height(32.dp),
@@ -77,7 +78,7 @@ fun GlassTooltip(text: String, modifier: Modifier = Modifier) {
 
 /** Rich tooltip: a milk pane (radius 24) with a title, body copy and a plain action. */
 @Composable
-fun GlassRichTooltip(
+public fun GlassRichTooltip(
     title: String,
     text: String,
     actionLabel: String,
@@ -89,7 +90,7 @@ fun GlassRichTooltip(
     GlassSurface(
         finish = GlassFinish.Milk,
         modifier = modifier.width(300.dp),
-        shape = SeaGlassShape.Pane(24.dp),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane24),
         role = role,
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopStart,
@@ -107,7 +108,7 @@ fun GlassRichTooltip(
 /** Anchors a [GlassTooltip] to [content]; long-press or hover shows it. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GlassTooltipBox(tooltip: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+public fun GlassTooltipBox(tooltip: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { GlassTooltip(tooltip) },

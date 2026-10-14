@@ -299,3 +299,11 @@ Details, measurements and open items are in `platforms/android/docs/performance.
 - `seaGlass` remembers its draw modifiers, so the shadow and inset caches rebuild only when their inputs change; before, glass in scrolling lists rebuilt them every frame.
 - The app requests the fastest display mode at the current resolution.
 - Measured on a Primebook 3 (Mali-G57 MC2, 60 Hz only): the Buttons page scroll went from 51–65% janky frames and about 42 ms GPU per frame to 3.5–4.5% and about 19 ms; the photo library from 5–6% to 1–2% janky; idle Home from about 310 frames per 5 s to 0. Nothing above 60 Hz was verified.
+
+## SDK split (1.0.0-alpha01)
+
+- `:sdk:tokens` (namespace `com.floydwiz.seaglass.tokens`) holds the generated tokens; `:sdk:seaglass` depends on it; `:sdk:bom` pins both to `seaglass.version`. `core/tokens` is the source; `verifySeaGlassTokens` runs before every build.
+- The hand-copied palette and colour-scheme files are gone. The theme, roles and components read the generated palettes, schemes and token objects wherever the value is identical. Letter spacing and eight Material colour roles follow the tokens, so the catalogue, Motion lab and Accessibility lab pages render slightly differently from before; everything else renders pixel for pixel as before (checked on the tablet emulator against the previous commit plus only those token changes).
+- Both modules use explicit API mode. 6 declarations became internal; 7 controls for labs and debugging (`GlassClockScope`, `GlassOverrides`, `GlassLayers`, `GlassRecipeInfo`, `glassBoardBackground`, `SeaGlassTokens.Motion.slowdown`, the layer overload of `SeaGlassTheme`) are public behind `@SeaGlassLabApi`.
+- Not published to a repository. The Maven publication definitions (POM, sources jar, BOM) exist without a repository; `-Pseaglass.fromAar=true` builds the sample from the AAR files.
+- No binary-compatibility check: Kotlin's built-in ABI validation and the standard validator plugin do not support AGP built-in Kotlin Android libraries (KT-78025). Revisit when they do.

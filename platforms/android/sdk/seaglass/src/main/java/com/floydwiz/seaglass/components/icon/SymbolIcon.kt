@@ -26,7 +26,7 @@ import com.floydwiz.seaglass.theme.symbolsFamily
  * - [size] is in dp and ignores the system font scale.
  */
 @Composable
-fun SymbolIcon(
+public fun SymbolIcon(
     name: String,
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
@@ -33,12 +33,13 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-private val ChipHeight = 34.dp
+private val ChipHeight = SeaGlassSizeTokens.Chip
 
 /** Filter chip: a sunken well when off, tinted glass with a heavy check when on (selection lifts). */
 @Composable
-fun GlassFilterChip(
+public fun GlassFilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     label: String,
@@ -71,7 +72,7 @@ fun GlassFilterChip(
 
 /** Input chip: a frost capsule with an avatar bead and a small remove lens. */
 @Composable
-fun GlassInputChip(
+public fun GlassInputChip(
     label: String,
     initial: String,
     onClick: () -> Unit,
@@ -120,7 +121,7 @@ fun GlassInputChip(
 
 /** Suggestion chip: clear glass with an accent symbol. */
 @Composable
-fun GlassSuggestionChip(
+public fun GlassSuggestionChip(
     label: String,
     icon: String,
     onClick: () -> Unit,

@@ -20,7 +20,7 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
@@ -30,8 +30,10 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-private val BoxSize = 26.dp
+private val BoxSize = SeaGlassSizeTokens.Checkbox
 
 /**
  * 26 dp check with a 9 dp radius: a well when off, glass with a heavy check or dash when on or mixed.
@@ -39,7 +41,7 @@ private val BoxSize = 26.dp
  * - [size] and [shape] change the box, for example a 28 dp round check pebble.
  */
 @Composable
-fun GlassTriStateCheckbox(
+public fun GlassTriStateCheckbox(
     state: ToggleableState,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -48,7 +50,7 @@ fun GlassTriStateCheckbox(
     role: TonalTones = LocalGlassRole.current,
     interactionSource: MutableInteractionSource? = null,
     size: Dp = BoxSize,
-    shape: SeaGlassShape = SeaGlassShape.Pane(9.dp),
+    shape: SeaGlassShape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Checkbox),
 ) {
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val seaPink = LocalRolePalettes.current[GlassRole.SeaPink]
@@ -87,7 +89,7 @@ fun GlassTriStateCheckbox(
 }
 
 @Composable
-fun GlassCheckbox(
+public fun GlassCheckbox(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
@@ -96,7 +98,7 @@ fun GlassCheckbox(
     role: TonalTones = LocalGlassRole.current,
     interactionSource: MutableInteractionSource? = null,
     size: Dp = BoxSize,
-    shape: SeaGlassShape = SeaGlassShape.Pane(9.dp),
+    shape: SeaGlassShape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Checkbox),
 ) {
     GlassTriStateCheckbox(
         state = ToggleableState(checked),
@@ -113,7 +115,7 @@ fun GlassCheckbox(
 
 /** 26 dp radio: a well when off; when selected a glass lens holding a 10 dp pearl. */
 @Composable
-fun GlassRadioButton(
+public fun GlassRadioButton(
     selected: Boolean,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,

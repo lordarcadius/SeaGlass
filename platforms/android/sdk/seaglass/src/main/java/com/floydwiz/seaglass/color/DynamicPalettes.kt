@@ -3,6 +3,7 @@ package com.floydwiz.seaglass.color
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import com.floydwiz.seaglass.tokens.TonalTones
 
 private val anchorTones = intArrayOf(100, 99, 95, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0)
 private val generatedTones = intArrayOf(
@@ -51,7 +52,7 @@ private val neutral2 = intArrayOf(
  * - Tones the system does not publish (4, 6, 12, 85, 87, …) are interpolated between neighbouring anchors.
  * - Sea pink and the four accents stay static; harmonizing them toward the dynamic primary is not done yet.
  */
-fun dynamicRolePalettes(context: Context): SeaGlassRolePalettes {
+internal fun dynamicRolePalettes(context: Context): SeaGlassRolePalettes {
     val static = SeaGlassRolePalettes.Static
     return SeaGlassRolePalettes(
         roles = GlassRole.entries.associateWith { static[it] } + mapOf(

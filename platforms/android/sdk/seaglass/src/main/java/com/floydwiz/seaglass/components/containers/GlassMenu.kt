@@ -31,14 +31,16 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
 /** Milk pane holding menu rows: radius 24, 8 dp padding, rows 44 dp tall. */
 @Composable
-fun GlassMenu(modifier: Modifier = Modifier, width: androidx.compose.ui.unit.Dp = 214.dp, content: @Composable ColumnScope.() -> Unit) {
+public fun GlassMenu(modifier: Modifier = Modifier, width: androidx.compose.ui.unit.Dp = 214.dp, content: @Composable ColumnScope.() -> Unit) {
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier.width(width).background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(24.dp)),
-        shape = SeaGlassShape.Pane(24.dp),
+        modifier = modifier.width(width).background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane24)),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane24),
         contentAlignment = Alignment.TopStart,
     ) {
         Column(Modifier.padding(8.dp), content = content)
@@ -51,7 +53,7 @@ fun GlassMenu(modifier: Modifier = Modifier, width: androidx.compose.ui.unit.Dp 
  * - A plain row condenses clear glass while pressed.
  */
 @Composable
-fun GlassMenuItem(
+public fun GlassMenuItem(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -71,7 +73,7 @@ fun GlassMenuItem(
     val symbol = if (danger || highlighted) content else glassOnSurfaceVariant()
     GlassSurface(
         finish = if (highlighted) GlassFinish.Frost else GlassFinish.Plain,
-        modifier = modifier.fillMaxWidth().height(44.dp),
+        modifier = modifier.fillMaxWidth().height(SeaGlassSizeTokens.MenuRow),
         shape = SeaGlassShape.Capsule,
         onClick = onClick,
         semanticsRole = Role.Button,
@@ -87,7 +89,7 @@ fun GlassMenuItem(
 }
 
 @Composable
-fun GlassMenuDivider() {
+public fun GlassMenuDivider() {
     Box(Modifier.fillMaxWidth().height(9.dp).padding(horizontal = 16.dp, vertical = 4.dp)) {
         HorizontalDivider(color = LocalContentColor.current.copy(alpha = 0.1f))
     }

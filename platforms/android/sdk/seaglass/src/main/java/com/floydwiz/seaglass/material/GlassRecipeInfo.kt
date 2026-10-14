@@ -1,15 +1,17 @@
 package com.floydwiz.seaglass.material
 
-import com.floydwiz.seaglass.color.SeaGlassPalettes
+import com.floydwiz.seaglass.tokens.SeaGlassPalettes
 import com.floydwiz.seaglass.theme.SeaGlassContrast
+import com.floydwiz.seaglass.SeaGlassLabApi
 
 /** Values of a finish's recipe at standard contrast, for controls that start where the recipe is. */
-object GlassRecipeInfo {
+@SeaGlassLabApi
+public object GlassRecipeInfo {
     private fun context(dark: Boolean) = GlassContext(dark, SeaGlassContrast.Standard, false, SeaGlassPalettes.Aqua, 0f, false)
 
     /** The backdrop blur radius in dp, or null for a finish that does not blur its backdrop. */
-    fun blurDp(finish: GlassFinish, dark: Boolean): Float? = (GlassRecipes.body(finish, context(dark)) as? Body.Backdrop)?.blur
+    public fun blurDp(finish: GlassFinish, dark: Boolean): Float? = (GlassRecipes.body(finish, context(dark)) as? Body.Backdrop)?.blur
 
     /** The grain opacity. */
-    fun grain(finish: GlassFinish, dark: Boolean): Float = GlassRecipes.layers(finish, context(dark), 120f, 56f).grain
+    public fun grain(finish: GlassFinish, dark: Boolean): Float = GlassRecipes.layers(finish, context(dark), 120f, 56f).grain
 }

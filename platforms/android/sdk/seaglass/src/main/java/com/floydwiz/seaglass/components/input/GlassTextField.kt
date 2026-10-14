@@ -27,7 +27,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
@@ -42,6 +42,8 @@ import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import com.floydwiz.seaglass.theme.RobotoFlex
 import com.floydwiz.seaglass.material.SeaGlassTokens
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
 internal data class FieldColors(val label: androidx.compose.ui.graphics.Color, val symbol: androidx.compose.ui.graphics.Color, val value: androidx.compose.ui.graphics.Color, val placeholder: androidx.compose.ui.graphics.Color, val supporting: androidx.compose.ui.graphics.Color)
 
@@ -68,7 +70,7 @@ internal fun fieldColors(enabled: Boolean, error: Boolean, focused: Boolean, rol
  * - A 26 dp clear lens clears a non-empty value.
  */
 @Composable
-fun GlassTextField(
+public fun GlassTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -92,14 +94,14 @@ fun GlassTextField(
     val seaPink = LocalRolePalettes.current[GlassRole.SeaPink]
     val colors = fieldColors(enabled, error, focused, role)
     val dark = LocalSeaGlassDark.current
-    val shape = SeaGlassShape.Pane(18.dp)
+    val shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Field)
     val ring = if (error && enabled && !focused) Modifier.border(1.5.dp, if (dark) seaPink[80] else seaPink[60], shape) else Modifier
 
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, Modifier.padding(start = 6.dp), color = colors.label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         GlassSurface(
             finish = GlassFinish.Well,
-            modifier = Modifier.fillMaxWidth().height(52.dp).then(ring),
+            modifier = Modifier.fillMaxWidth().height(SeaGlassSizeTokens.Field).then(ring),
             shape = shape,
             role = if (error) seaPink else role,
             tinted = focused || error,
@@ -138,7 +140,7 @@ fun GlassTextField(
 
 /** Multi-line text field: a 22 dp well with a character counter. */
 @Composable
-fun GlassTextArea(
+public fun GlassTextArea(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -158,7 +160,7 @@ fun GlassTextArea(
         GlassSurface(
             finish = GlassFinish.Well,
             modifier = Modifier.fillMaxWidth().height(128.dp),
-            shape = SeaGlassShape.Pane(22.dp),
+            shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.TextArea),
             role = role,
             tinted = focused,
             enabled = enabled,

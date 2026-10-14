@@ -235,7 +235,7 @@ fun TodoDemo(onBack: () -> Unit) {
 }
 
 @Composable
-private fun SwipeLens(icon: String, role: com.floydwiz.seaglass.color.TonalTones) {
+private fun SwipeLens(icon: String, role: com.floydwiz.seaglass.tokens.TonalTones) {
     GlassSurface(GlassFinish.Glass, Modifier.size(48.dp), SeaGlassShape.Lens, role, reactsTo = emptySet()) {
         SymbolIcon(icon, size = 24.dp, weight = 600, tint = androidx.compose.material3.LocalContentColor.current)
     }

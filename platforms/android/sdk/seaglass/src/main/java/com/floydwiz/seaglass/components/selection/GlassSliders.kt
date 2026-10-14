@@ -41,7 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassState
@@ -56,10 +56,12 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
 private val ThumbWidth = 34.dp
 private val ThumbHeight = 22.dp
-private val TrackHeight = 10.dp
+private val TrackHeight = SeaGlassSizeTokens.SliderTrack
 private val Inset = ThumbWidth / 2
 
 /**
@@ -68,7 +70,7 @@ private val Inset = ThumbWidth / 2
  * - [stepCount] intervals draw 4 dp stop dots and snap the value; 0 is continuous.
  */
 @Composable
-fun GlassSlider(
+public fun GlassSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
@@ -98,7 +100,7 @@ fun GlassSlider(
 
 /** Rail slider with two thumbs; dragging moves the nearer one. */
 @Composable
-fun GlassRangeSlider(
+public fun GlassRangeSlider(
     value: ClosedFloatingPointRange<Float>,
     onValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
     modifier: Modifier = Modifier,
@@ -209,7 +211,7 @@ private fun RailSlider(
             GlassSurface(
                 finish = GlassFinish.Well,
                 modifier = Modifier.offset(Inset, 0.dp).size(trackLength, TrackHeight),
-                shape = SeaGlassShape.Pane(5.dp),
+                shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Track),
                 role = role,
                 enabled = enabled,
                 reactsTo = emptySet(),
@@ -222,7 +224,7 @@ private fun RailSlider(
                         .offset(Inset + trackLength * fillFrom, 0.dp)
                         .size(fillWidth, TrackHeight)
                         .graphicsLayer { alpha = if (enabled) 1f else SeaGlassTokens.State.Disabled.ContentAlpha },
-                    shape = SeaGlassShape.Pane(5.dp),
+                    shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Track),
                     role = role,
                     reactsTo = emptySet(),
                 )
@@ -298,7 +300,7 @@ private fun RailSlider(
  * - The liquid grows 2% while dragged.
  */
 @Composable
-fun GlassPillSlider(
+public fun GlassPillSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
     icon: String,

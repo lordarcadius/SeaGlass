@@ -17,23 +17,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
 
 /** Sheet pane: milk over a solid surface (a modal window has no backdrop to blur), inset 8 dp, radius 36, with a 40×6 well grabber. */
 @Composable
-fun GlassSheetPane(
+public fun GlassSheetPane(
     modifier: Modifier = Modifier,
     role: TonalTones = LocalGlassRole.current,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     GlassSurface(
         finish = GlassFinish.Milk,
-        modifier = modifier.background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(36.dp)),
-        shape = SeaGlassShape.Pane(36.dp),
+        modifier = modifier.background(MaterialTheme.colorScheme.surface, SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane36)),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane36),
         role = role,
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopStart,
@@ -50,7 +51,7 @@ fun GlassSheetPane(
 /** Modal bottom sheet built on the Material scrim and drag handling, drawn as a [GlassSheetPane]. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GlassBottomSheet(
+public fun GlassBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,

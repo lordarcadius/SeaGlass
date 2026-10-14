@@ -2,6 +2,8 @@ package com.floydwiz.seaglass.material
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
+import com.floydwiz.seaglass.SeaGlassLabApi
+import androidx.compose.runtime.ProvidableCompositionLocal
 
 /**
  * Values applied on top of the recipe of every glass element below, for exploring a finish.
@@ -9,18 +11,20 @@ import androidx.compose.runtime.compositionLocalOf
  * - [grain] replaces the grain opacity; [lightScale] scales the light pool, [rimScale] the rim and [shadowScale] the
  *   drop shadow, caustic and contact shadow.
  */
+@SeaGlassLabApi
 @Immutable
-class GlassOverrides(
-    val blurDp: Float? = null,
-    val tintDelta: Float = 0f,
-    val grain: Float? = null,
-    val lightScale: Float = 1f,
-    val rimScale: Float = 1f,
-    val shadowScale: Float = 1f,
+public class GlassOverrides(
+    public val blurDp: Float? = null,
+    public val tintDelta: Float = 0f,
+    public val grain: Float? = null,
+    public val lightScale: Float = 1f,
+    public val rimScale: Float = 1f,
+    public val shadowScale: Float = 1f,
 ) {
-    companion object {
-        val None = GlassOverrides()
+    public companion object {
+        public val None: GlassOverrides = GlassOverrides()
     }
 }
 
-val LocalGlassOverrides = compositionLocalOf { GlassOverrides.None }
+@SeaGlassLabApi
+public val LocalGlassOverrides: ProvidableCompositionLocal<GlassOverrides> = compositionLocalOf { GlassOverrides.None }

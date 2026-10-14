@@ -23,6 +23,8 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Sea Glass Sample"
+include(":sdk:bom")
+include(":sdk:tokens")
 include(":sdk:seaglass")
 include(":sample")
 include(":benchmark")

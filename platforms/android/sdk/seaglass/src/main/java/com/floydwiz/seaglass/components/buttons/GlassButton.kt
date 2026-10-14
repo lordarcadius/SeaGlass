@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
@@ -28,14 +28,15 @@ import com.floydwiz.seaglass.material.glassOnSurfaceVariant
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
-enum class GlassButtonStyle { Glass, Frost, Clear, Plain, Destructive }
+public enum class GlassButtonStyle { Glass, Frost, Clear, Plain, Destructive }
 
-enum class GlassButtonSize(val height: Dp, val padding: Dp, val fontSize: Float, val iconSize: Dp, val gap: Dp) {
-    S(36.dp, 14.dp, 14f, 18.dp, 6.dp),
-    M(44.dp, 18.dp, 15f, 20.dp, 8.dp),
-    L(56.dp, 24.dp, 17f, 22.dp, 10.dp),
-    XL(72.dp, 30.dp, 20f, 26.dp, 12.dp),
+public enum class GlassButtonSize(public val height: Dp, public val padding: Dp, public val fontSize: Float, public val iconSize: Dp, public val gap: Dp) {
+    S(SeaGlassSizeTokens.ButtonS, 14.dp, 14f, 18.dp, 6.dp),
+    M(SeaGlassSizeTokens.ButtonM, 18.dp, 15f, 20.dp, 8.dp),
+    L(SeaGlassSizeTokens.ButtonL, 24.dp, 17f, 22.dp, 10.dp),
+    XL(SeaGlassSizeTokens.ButtonXL, 30.dp, 20f, 26.dp, 12.dp),
 }
 
 private fun GlassButtonStyle.finish() = when (this) {
@@ -52,7 +53,7 @@ private fun GlassButtonStyle.finish() = when (this) {
  * - Every size keeps a 48 dp touch target.
  */
 @Composable
-fun GlassButton(
+public fun GlassButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -89,12 +90,12 @@ fun GlassButton(
 
 /** Icon-only lens button, 48 dp by default; the symbol is 48% of [size]. */
 @Composable
-fun GlassIconButton(
+public fun GlassIconButton(
     icon: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     style: GlassButtonStyle = GlassButtonStyle.Clear,
-    size: Dp = 48.dp,
+    size: Dp = SeaGlassSizeTokens.IconButton,
     filled: Boolean = style == GlassButtonStyle.Glass,
     shape: SeaGlassShape = SeaGlassShape.Lens,
     iconScale: Float = 0.48f,
@@ -123,12 +124,12 @@ fun GlassIconButton(
 
 /** Toggle lens: clear with an outlined symbol when off, tinted glass with a filled symbol when on. */
 @Composable
-fun GlassToggleButton(
+public fun GlassToggleButton(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     icon: String,
     modifier: Modifier = Modifier,
-    size: Dp = 48.dp,
+    size: Dp = SeaGlassSizeTokens.IconButton,
     enabled: Boolean = true,
     role: TonalTones = LocalGlassRole.current,
     contentDescription: String? = null,

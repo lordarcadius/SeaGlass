@@ -1,9 +1,12 @@
 package com.floydwiz.seaglass.material
 
 import androidx.compose.ui.graphics.Color
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.SeaGlassDarkExtendedColors
+import com.floydwiz.seaglass.tokens.SeaGlassExtendedColors
+import com.floydwiz.seaglass.tokens.SeaGlassLightExtendedColors
+import com.floydwiz.seaglass.tokens.TonalTones
 
-enum class GlassFinish { Glass, Frost, Clear, Lens, Pearl, Fill, Well, Milk, Ink, Dry, Bead, Plain }
+public enum class GlassFinish { Glass, Frost, Clear, Lens, Pearl, Fill, Well, Milk, Ink, Dry, Bead, Plain }
 
 /** Finishes that stand off the surface: they lift on hover and bloom light on press. */
 internal val GlassFinish.isRaised
@@ -13,17 +16,19 @@ internal val GlassFinish.isRaised
         else -> false
     }
 
+internal fun extendedColors(dark: Boolean): SeaGlassExtendedColors = if (dark) SeaGlassDarkExtendedColors else SeaGlassLightExtendedColors
+
 /** Foreground colour for content drawn on [finish] (`FG()` in recipes.js). */
-fun glassContentColor(finish: GlassFinish, role: TonalTones, dark: Boolean): Color = when (finish) {
+public fun glassContentColor(finish: GlassFinish, role: TonalTones, dark: Boolean): Color = when (finish) {
     GlassFinish.Glass, GlassFinish.Frost -> if (dark) role[95] else role[10]
     GlassFinish.Fill, GlassFinish.Bead -> if (dark) role[10] else Color.White
-    GlassFinish.Pearl -> Color(0xFF171C1F)
-    GlassFinish.Ink -> if (dark) Color(0xFF171C1F) else Color(0xFFEEF3F5)
+    GlassFinish.Pearl -> extendedColors(dark).onPearl
+    GlassFinish.Ink -> extendedColors(dark).onInk
     GlassFinish.Dry -> disabledContentColor(dark)
     GlassFinish.Clear, GlassFinish.Lens, GlassFinish.Well, GlassFinish.Milk, GlassFinish.Plain ->
         if (dark) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight
 }
 
-fun disabledContentColor(dark: Boolean): Color =
+public fun disabledContentColor(dark: Boolean): Color =
     (if (dark) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight)
         .copy(alpha = SeaGlassTokens.State.Disabled.ContentAlpha)

@@ -21,7 +21,7 @@ import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 
-enum class BannerKind(val role: GlassRole, val icon: String) {
+public enum class BannerKind(public val role: GlassRole, public val icon: String) {
     Info(GlassRole.Aqua, "info"),
     Warning(GlassRole.Honey, "warning"),
     Error(GlassRole.SeaPink, "error"),
@@ -30,7 +30,7 @@ enum class BannerKind(val role: GlassRole, val icon: String) {
 
 /** Persistent banner: tinted frost in the role colour of its meaning, 52 dp tall, with the action as plain text. */
 @Composable
-fun GlassBanner(
+public fun GlassBanner(
     message: String,
     kind: BannerKind,
     actionLabel: String,

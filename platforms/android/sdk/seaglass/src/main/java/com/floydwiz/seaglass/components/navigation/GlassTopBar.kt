@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.buttons.ClusterItem
 import com.floydwiz.seaglass.components.buttons.GlassCluster
 import com.floydwiz.seaglass.components.icon.SymbolIcon
@@ -32,7 +32,7 @@ import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 
 /** 44 dp lens used for bar actions: clear by default, glass for the primary action. */
 @Composable
-fun GlassBarLens(icon: String, onClick: () -> Unit, modifier: Modifier = Modifier, primary: Boolean = false, description: String? = null, role: TonalTones = LocalGlassRole.current) {
+public fun GlassBarLens(icon: String, onClick: () -> Unit, modifier: Modifier = Modifier, primary: Boolean = false, description: String? = null, role: TonalTones = LocalGlassRole.current) {
     GlassSurface(
         finish = if (primary) GlassFinish.Glass else GlassFinish.Clear,
         modifier = modifier.size(44.dp),
@@ -46,7 +46,7 @@ fun GlassBarLens(icon: String, onClick: () -> Unit, modifier: Modifier = Modifie
 
 /** Clear cluster of icon actions for a top bar. */
 @Composable
-fun GlassBarActions(actions: List<ClusterItem>, onClick: (Int) -> Unit, modifier: Modifier = Modifier) {
+public fun GlassBarActions(actions: List<ClusterItem>, onClick: (Int) -> Unit, modifier: Modifier = Modifier) {
     Box(modifier.height(44.dp)) {
         GlassCluster(actions, selected = emptySet(), onItemClick = onClick)
     }
@@ -58,7 +58,7 @@ fun GlassBarActions(actions: List<ClusterItem>, onClick: (Int) -> Unit, modifier
  * - [scrolled] fades in the 84 dp edge diffusion under it instead of a hard bar.
  */
 @Composable
-fun GlassTopBar(
+public fun GlassTopBar(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,

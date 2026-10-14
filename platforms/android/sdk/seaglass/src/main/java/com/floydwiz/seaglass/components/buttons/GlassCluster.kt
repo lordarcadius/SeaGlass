@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.icon.SymbolIcon
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
@@ -18,7 +18,7 @@ import com.floydwiz.seaglass.material.glassOnRole
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 
-class ClusterItem(val icon: String, val description: String)
+public class ClusterItem(public val icon: String, public val description: String)
 
 /**
  * Related actions in one clear capsule.
@@ -26,7 +26,7 @@ class ClusterItem(val icon: String, val description: String)
  * - Pressing an inactive item condenses a clear lens that bulges 4 dp past the capsule (press scale 1.2).
  */
 @Composable
-fun GlassCluster(
+public fun GlassCluster(
     items: List<ClusterItem>,
     selected: Set<Int>,
     onItemClick: (Int) -> Unit,

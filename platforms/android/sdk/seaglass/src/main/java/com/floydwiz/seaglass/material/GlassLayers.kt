@@ -2,10 +2,13 @@ package com.floydwiz.seaglass.material
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.floydwiz.seaglass.SeaGlassLabApi
+import androidx.compose.runtime.ProvidableCompositionLocal
 
 /** Debug switches for each layer of the material stack. */
+@SeaGlassLabApi
 @Immutable
-data class GlassLayers(
+public data class GlassLayers(
     val shadow: Boolean = true,
     val caustic: Boolean = true,
     val contact: Boolean = true,
@@ -15,10 +18,11 @@ data class GlassLayers(
     val volume: Boolean = true,
     val rim: Boolean = true,
 ) {
-    companion object {
-        val All = GlassLayers()
-        val None = GlassLayers(false, false, false, false, false, false, false, false)
+    public companion object {
+        public val All: GlassLayers = GlassLayers()
+        public val None: GlassLayers = GlassLayers(false, false, false, false, false, false, false, false)
     }
 }
 
-val LocalGlassLayers = staticCompositionLocalOf { GlassLayers.All }
+@SeaGlassLabApi
+public val LocalGlassLayers: ProvidableCompositionLocal<GlassLayers> = staticCompositionLocalOf { GlassLayers.All }

@@ -1,0 +1,76 @@
+# Sea Glass for Android
+
+Sea Glass is a frosted, diffusing glass material and a set of Jetpack Compose components built on Material 3 Expressive.
+
+| Module | Namespace | Contents |
+| --- | --- | --- |
+| `:sdk:tokens` | `com.floydwiz.seaglass.tokens` | Generated design tokens: palettes, colour schemes, type scale, dimensions, shapes, shadows. Source: `core/tokens`. |
+| `:sdk:seaglass` | `com.floydwiz.seaglass` | Theme, the glass material (`Modifier.seaGlass`, `GlassSurface`, `GlassBackdrop`) and the components. Depends on `:sdk:tokens`. |
+| `:sdk:bom` | | Pins the two modules to one version. |
+
+Requirements: minSdk 31, compileSdk 37, Compose BOM 2026.09.00 or newer, Kotlin 2.4.
+
+## Getting the SDK
+
+The SDK is not published to any repository. Use it in one of two ways.
+
+**As Gradle modules** (this repository): include `:sdk:tokens` and `:sdk:seaglass` in the build and depend on them.
+
+```kotlin
+dependencies {
+    implementation(project(":sdk:seaglass"))
+}
+```
+
+**As AAR files**: run `./gradlew :sdk:tokens:assembleRelease :sdk:seaglass:assembleRelease` from `platforms/android`, then add `sdk/tokens/build/outputs/aar/tokens-release.aar` and `sdk/seaglass/build/outputs/aar/seaglass-release.aar` to the app. An AAR carries no dependency metadata, so the app also needs:
+
+```kotlin
+dependencies {
+    implementation(files("libs/tokens-release.aar", "libs/seaglass-release.aar"))
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.graphics:graphics-shapes:1.1.0")
+    implementation("androidx.core:core-ktx")
+}
+```
+
+`-Pseaglass.fromAar=true` builds the sample app this way, to test the AAR setup.
+
+When the SDK is published, the coordinates will be `com.floydwiz.seaglass:{tokens,seaglass,bom}:1.0.0-alpha01`, used as a BOM:
+
+```kotlin
+dependencies {
+    implementation(platform("com.floydwiz.seaglass:bom:1.0.0-alpha01"))
+    implementation("com.floydwiz.seaglass:seaglass")
+}
+```
+
+## Minimal setup
+
+`GlassBackdrop` marks its `backdrop` as the content the glass blurs; glass elements in its content blur what is behind them.
+
+```kotlin
+@Composable
+fun Hello() {
+    SeaGlassTheme(dark = isSystemInDarkTheme()) {
+        GlassBackdrop(
+            modifier = Modifier.fillMaxSize(),
+            backdrop = { Image(painterResource(R.drawable.photo), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) },
+        ) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                GlassButton(label = "Continue", onClick = { })
+            }
+        }
+    }
+}
+```
+
+Imports: `com.floydwiz.seaglass.theme.SeaGlassTheme`, `com.floydwiz.seaglass.material.GlassBackdrop`, `com.floydwiz.seaglass.components.buttons.GlassButton`.
+
+`SeaGlassTheme` also takes `contrast`, `reduceTransparency`, `dynamicColor`, `seedRole` and `lightDrift` (the light pool animates only when it is on). Blur needs API 31; with `reduceTransparency` glass draws solid fills.
+
+## Lab API
+
+Controls for exploring the material (per-layer switches, recipe overrides, the drift clock, board backdrops) are marked `@SeaGlassLabApi`. They are public, need an explicit opt-in, and can change without notice. The sample app opts in with `kotlin { compilerOptions { optIn.add("com.floydwiz.seaglass.SeaGlassLabApi") } }`.

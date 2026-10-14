@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.GlassSurface
@@ -27,6 +27,7 @@ import com.floydwiz.seaglass.material.LocalMotionEnabled
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalGlassRole
 import kotlin.math.floor
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
 private val MorphEasing = CubicBezierEasing(0.45f, 0f, 0.25f, 1f)
 private val Silhouettes = listOf(SeaGlassShape.Lens, SeaGlassShape.Shard, SeaGlassShape.Egg, SeaGlassShape.Tumble)
@@ -37,9 +38,9 @@ private val Silhouettes = listOf(SeaGlassShape.Lens, SeaGlassShape.Shard, SeaGla
  * - With animations off the pebble holds the lens shape.
  */
 @Composable
-fun GlassLoadingIndicator(
+public fun GlassLoadingIndicator(
     modifier: Modifier = Modifier,
-    size: Dp = 56.dp,
+    size: Dp = SeaGlassSizeTokens.Loading,
     contained: Boolean = false,
     role: TonalTones = LocalGlassRole.current,
 ) {
@@ -81,7 +82,7 @@ fun GlassLoadingIndicator(
 
 /** Three beads that bob in sequence, for inline waits. */
 @Composable
-fun GlassBeadsLoading(modifier: Modifier = Modifier, role: TonalTones = LocalGlassRole.current) {
+public fun GlassBeadsLoading(modifier: Modifier = Modifier, role: TonalTones = LocalGlassRole.current) {
     val motion = LocalMotionEnabled.current
     val transition = rememberInfiniteTransition(label = "beads")
     Row(modifier, Arrangement.spacedBy(8.dp), Alignment.CenterVertically) {

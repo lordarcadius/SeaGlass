@@ -20,7 +20,7 @@ private fun Float.toContrastLevel() = when {
 
 /** The contrast level chosen in system settings, tracked live; Standard below Android 14. */
 @Composable
-fun rememberSystemContrast(): SeaGlassContrast {
+public fun rememberSystemContrast(): SeaGlassContrast {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return SeaGlassContrast.Standard
     val context = LocalContext.current
     val manager = remember(context) { context.getSystemService(UiModeManager::class.java) }
@@ -35,7 +35,7 @@ fun rememberSystemContrast(): SeaGlassContrast {
 
 /** Whether the system allows cross-window blur, tracked live; it is off in power saving, for example. */
 @Composable
-fun rememberCrossWindowBlurEnabled(): Boolean {
+public fun rememberCrossWindowBlurEnabled(): Boolean {
     val context = LocalContext.current
     val manager = remember(context) { context.getSystemService(WindowManager::class.java) }
     var enabled by remember(manager) { mutableStateOf(manager.isCrossWindowBlurEnabled) }

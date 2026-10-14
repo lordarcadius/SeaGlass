@@ -122,7 +122,7 @@ internal fun BackdropSampler.captureModifier(): Modifier {
 }
 
 /** The luminance a floating surface sampled behind it, after the finish's brightness [lifted], and the tint [amount] it chose. */
-class AdaptiveSample(val luminance: Float, val lifted: Float, val amount: Float)
+public class AdaptiveSample(public val luminance: Float, public val lifted: Float, public val amount: Float)
 
 internal class Adaptive(val amount: Float, val sample: AdaptiveSample?, val boundsModifier: Modifier)
 

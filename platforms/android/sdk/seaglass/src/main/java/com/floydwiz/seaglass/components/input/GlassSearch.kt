@@ -38,7 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.buttons.GlassButton
 import com.floydwiz.seaglass.components.buttons.GlassButtonStyle
 import com.floydwiz.seaglass.components.icon.SymbolIcon
@@ -56,6 +56,7 @@ import com.floydwiz.seaglass.theme.LocalGlassRole
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import com.floydwiz.seaglass.theme.RobotoFlex
+import com.floydwiz.seaglass.tokens.SeaGlassSizeTokens
 
 @Composable
 private fun inkColor() = if (LocalSeaGlassDark.current) SeaGlassTokens.Content.OnSurfaceDark else SeaGlassTokens.Content.OnSurfaceLight
@@ -90,7 +91,7 @@ private fun SearchText(
  * Search inside content: a 46 dp well. Focus tints it and reveals a clear lens and a Cancel button.
  */
 @Composable
-fun GlassSearchField(
+public fun GlassSearchField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -108,7 +109,7 @@ fun GlassSearchField(
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         GlassSurface(
             finish = GlassFinish.Well,
-            modifier = Modifier.weight(1f).height(46.dp),
+            modifier = Modifier.weight(1f).height(SeaGlassSizeTokens.Search),
             shape = SeaGlassShape.Pane(23.dp),
             role = role,
             tinted = focused,
@@ -134,7 +135,7 @@ fun GlassSearchField(
 
 /** Search that floats over content: a clear capsule with its own clear lens beside it. */
 @Composable
-fun GlassFloatingSearch(
+public fun GlassFloatingSearch(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -173,7 +174,7 @@ fun GlassFloatingSearch(
     }
 }
 
-class PromptAttachment(val name: String, val thumbnail: Painter? = null)
+public class PromptAttachment(public val name: String, public val thumbnail: Painter? = null)
 
 private val Waveform = listOf(8, 14, 22, 30, 18, 26, 36, 24, 14, 20, 32, 22, 12, 18, 26, 16, 10, 6)
 
@@ -183,7 +184,7 @@ private val Waveform = listOf(8, 14, 22, 30, 18, 26, 36, 24, 14, 20, 32, 22, 12,
  * - With [onVoice] set, an empty field shows a lavender glass voice lens in place of send.
  */
 @Composable
-fun GlassPromptBar(
+public fun GlassPromptBar(
     value: String,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
@@ -226,7 +227,7 @@ fun GlassPromptBar(
         } else {
             GlassSurface(
                 finish = GlassFinish.Clear,
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier.fillMaxWidth().height(SeaGlassSizeTokens.PromptBar),
                 shape = SeaGlassShape.Capsule,
                 role = role,
                 interactionSource = source,
@@ -277,7 +278,7 @@ private fun ListeningBar(role: TonalTones, onStop: () -> Unit) {
     )
     GlassSurface(
         finish = GlassFinish.Glass,
-        modifier = Modifier.fillMaxWidth().height(60.dp),
+        modifier = Modifier.fillMaxWidth().height(SeaGlassSizeTokens.PromptBar),
         shape = SeaGlassShape.Capsule,
         role = role,
         reactsTo = emptySet(),
@@ -312,7 +313,7 @@ private fun ListeningBar(role: TonalTones, onStop: () -> Unit) {
 
 /** Compact picker: a clear capsule with an accent symbol that opens a picker pane. */
 @Composable
-fun GlassPickerChip(
+public fun GlassPickerChip(
     icon: String,
     label: String,
     onClick: () -> Unit,

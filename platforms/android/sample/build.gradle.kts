@@ -50,8 +50,27 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        optIn.add("com.floydwiz.seaglass.SeaGlassLabApi")
+    }
+}
+
+val seaGlassFromAar = providers.gradleProperty("seaglass.fromAar").orNull == "true"
+
+if (seaGlassFromAar) {
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn(":sdk:tokens:assembleRelease", ":sdk:seaglass:assembleRelease")
+    }
+}
+
 dependencies {
-    implementation(project(":sdk:seaglass"))
+    if (seaGlassFromAar) {
+        implementation(files("../sdk/tokens/build/outputs/aar/tokens-release.aar", "../sdk/seaglass/build/outputs/aar/seaglass-release.aar"))
+        implementation(libs.androidx.graphics.shapes)
+    } else {
+        implementation(project(":sdk:seaglass"))
+    }
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

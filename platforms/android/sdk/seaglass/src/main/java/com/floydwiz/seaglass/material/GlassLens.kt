@@ -9,8 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
+import com.floydwiz.seaglass.tokens.SeaGlassStateTokens
 
-private const val Magnification = 1.12f
+private val Magnification = SeaGlassStateTokens.LensMagnify
 private const val FallbackMagnification = 1.1f
 private const val EdgeBend = 0.08f
 

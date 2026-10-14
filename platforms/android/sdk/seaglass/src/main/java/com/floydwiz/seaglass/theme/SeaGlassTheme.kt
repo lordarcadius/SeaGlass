@@ -10,12 +10,13 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import com.floydwiz.seaglass.SeaGlassLabApi
 import com.floydwiz.seaglass.color.GlassRole
-import com.floydwiz.seaglass.color.SeaGlassDarkScheme
-import com.floydwiz.seaglass.color.SeaGlassLightScheme
-import com.floydwiz.seaglass.color.SeaGlassPalettes
+import com.floydwiz.seaglass.tokens.SeaGlassDarkScheme
+import com.floydwiz.seaglass.tokens.SeaGlassLightScheme
+import com.floydwiz.seaglass.tokens.SeaGlassPalettes
 import com.floydwiz.seaglass.color.SeaGlassRolePalettes
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.color.dynamicRolePalettes
 import com.floydwiz.seaglass.color.withContrast
 import com.floydwiz.seaglass.material.GlassLayers
@@ -27,23 +28,39 @@ import com.floydwiz.seaglass.material.LocalMotionScale
 import com.floydwiz.seaglass.material.SeaGlassTokens
 import com.floydwiz.seaglass.material.rememberAnimatorScale
 import com.floydwiz.seaglass.material.rememberGlassClock
+import androidx.compose.runtime.ProvidableCompositionLocal
 
-enum class SeaGlassContrast { Standard, Medium, High }
+public enum class SeaGlassContrast { Standard, Medium, High }
 
-val LocalSeaGlassDark = staticCompositionLocalOf { false }
-val LocalGlassContrast = staticCompositionLocalOf { SeaGlassContrast.Standard }
-val LocalReduceTransparency = staticCompositionLocalOf { false }
-val LocalRolePalettes = staticCompositionLocalOf { SeaGlassRolePalettes.Static }
-val LocalGlassRole = compositionLocalOf<TonalTones> { SeaGlassPalettes.Aqua }
+public val LocalSeaGlassDark: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { false }
+public val LocalGlassContrast: ProvidableCompositionLocal<SeaGlassContrast> = staticCompositionLocalOf { SeaGlassContrast.Standard }
+public val LocalReduceTransparency: ProvidableCompositionLocal<Boolean> = staticCompositionLocalOf { false }
+public val LocalRolePalettes: ProvidableCompositionLocal<SeaGlassRolePalettes> = staticCompositionLocalOf { SeaGlassRolePalettes.Static }
+public val LocalGlassRole: ProvidableCompositionLocal<TonalTones> = compositionLocalOf<TonalTones> { SeaGlassPalettes.Aqua }
 
 @Composable
-fun SeaGlassTheme(
+public fun SeaGlassTheme(
     dark: Boolean = isSystemInDarkTheme(),
     contrast: SeaGlassContrast = SeaGlassContrast.Standard,
     reduceTransparency: Boolean = false,
     dynamicColor: Boolean = false,
     seedRole: GlassRole = GlassRole.Aqua,
-    layers: GlassLayers = GlassLayers.All,
+    lightDrift: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    SeaGlassTheme(GlassLayers.All, dark, contrast, reduceTransparency, dynamicColor, seedRole, lightDrift, content)
+}
+
+/** [SeaGlassTheme] with a switch per layer of the material, for labs and debugging. */
+@SeaGlassLabApi
+@Composable
+public fun SeaGlassTheme(
+    layers: GlassLayers,
+    dark: Boolean = isSystemInDarkTheme(),
+    contrast: SeaGlassContrast = SeaGlassContrast.Standard,
+    reduceTransparency: Boolean = false,
+    dynamicColor: Boolean = false,
+    seedRole: GlassRole = GlassRole.Aqua,
     lightDrift: Boolean = false,
     content: @Composable () -> Unit,
 ) {

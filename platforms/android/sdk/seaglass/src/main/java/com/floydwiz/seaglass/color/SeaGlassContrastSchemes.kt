@@ -2,6 +2,8 @@ package com.floydwiz.seaglass.color
 
 import androidx.compose.material3.ColorScheme
 import com.floydwiz.seaglass.theme.SeaGlassContrast
+import com.floydwiz.seaglass.tokens.SeaGlassPalettes
+import com.floydwiz.seaglass.tokens.TonalTones
 
 /**
  * Adjusts the scheme for a contrast level.

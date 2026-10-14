@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.components.buttons.GlassButton
 import com.floydwiz.seaglass.components.buttons.GlassButtonSize
 import com.floydwiz.seaglass.components.buttons.GlassButtonStyle
@@ -37,10 +37,11 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
+import com.floydwiz.seaglass.tokens.SeaGlassRadiusTokens
 
-sealed interface DateSelection {
-    data class Single(val date: LocalDate?) : DateSelection
-    data class Range(val start: LocalDate?, val end: LocalDate?) : DateSelection
+public sealed interface DateSelection {
+    public data class Single(val date: LocalDate?) : DateSelection
+    public data class Range(val start: LocalDate?, val end: LocalDate?) : DateSelection
 }
 
 private val PickerWidth = 340.dp
@@ -53,7 +54,7 @@ private val CellSize = 44.dp
  * - [onDateClick] receives taps; the caller owns the selection logic.
  */
 @Composable
-fun GlassDatePicker(
+public fun GlassDatePicker(
     month: YearMonth,
     onMonthChange: (YearMonth) -> Unit,
     selection: DateSelection,
@@ -88,7 +89,7 @@ fun GlassDatePicker(
     GlassSurface(
         finish = GlassFinish.Milk,
         modifier = modifier.size(PickerWidth, height),
-        shape = SeaGlassShape.Pane(32.dp),
+        shape = SeaGlassShape.Pane(SeaGlassRadiusTokens.Pane32),
         role = role,
         reactsTo = emptySet(),
         contentAlignment = Alignment.TopStart,

@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalGraphicsContext
  * Glass inside [backdrop] itself has no source below it to blur, so put content that contains glass in [layer].
  */
 @Composable
-fun GlassBackdrop(
+public fun GlassBackdrop(
     modifier: Modifier = Modifier,
     backdrop: @Composable BoxScope.() -> Unit,
     layer: (@Composable BoxScope.() -> Unit)? = null,

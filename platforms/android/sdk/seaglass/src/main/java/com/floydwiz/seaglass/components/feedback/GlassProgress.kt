@@ -40,7 +40,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.floydwiz.seaglass.color.TonalTones
+import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.material.GlassFinish
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalMotionEnabled
@@ -57,7 +57,7 @@ private val SweepEasing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
  * - [progress] null is indeterminate: a liquid segment sweeps across the well every 1.8 s.
  */
 @Composable
-fun GlassLinearProgress(
+public fun GlassLinearProgress(
     progress: Float?,
     modifier: Modifier = Modifier,
     height: Dp = 8.dp,
@@ -109,7 +109,7 @@ fun GlassLinearProgress(
  *   past the liquid in ink; the value sits on the right, on the liquid only when the liquid reaches it.
  */
 @Composable
-fun GlassLiquidProgress(
+public fun GlassLiquidProgress(
     progress: Float,
     label: String,
     valueLabel: String,
@@ -145,7 +145,7 @@ fun GlassLiquidProgress(
  * - [progress] null is the comet: a glass arc fading to nothing at its tail, one turn every 1.2 s.
  */
 @Composable
-fun GlassRingProgress(
+public fun GlassRingProgress(
     progress: Float?,
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,

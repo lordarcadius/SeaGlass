@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import com.floydwiz.seaglass.R
 
-val RobotoFlex = FontFamily(
+public val RobotoFlex: FontFamily = FontFamily(
     listOf(300, 400, 450, 500, 550, 600, 650, 680, 700, 720, 750, 760, 800).map { Font(R.font.roboto_flex, FontWeight(it)) },
 )
 

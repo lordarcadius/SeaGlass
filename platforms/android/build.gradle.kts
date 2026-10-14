@@ -5,3 +5,10 @@ plugins {
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
+
+subprojects {
+    if (path.startsWith(":sdk:")) {
+        group = "com.floydwiz.seaglass"
+        version = providers.gradleProperty("seaglass.version").get()
+    }
+}
