@@ -27,6 +27,7 @@ local.properties
 *.ap_
 *.aab
 output.json
+release/
 
 # --------------------------
 # Kotlin
