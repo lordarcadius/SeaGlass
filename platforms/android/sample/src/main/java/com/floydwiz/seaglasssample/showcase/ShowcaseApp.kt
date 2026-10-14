@@ -30,7 +30,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.floydwiz.seaglass.theme.SeaGlassTheme
 import com.floydwiz.seaglass.theme.rememberCrossWindowBlurEnabled
 import com.floydwiz.seaglass.theme.rememberSystemContrast
 import com.floydwiz.seaglasssample.control.ControlState
@@ -113,7 +112,7 @@ fun ShowcaseApp(initialControls: ControlState = ControlState(), startRoute: Stri
         onDispose { }
     }
 
-    SeaGlassTheme(
+    LabTheme(
         dark = dark,
         contrast = controls.effectiveContrast,
         reduceTransparency = controls.effectiveReduceTransparency,

@@ -56,7 +56,7 @@ import com.floydwiz.seaglass.material.GlassRecipeInfo
 import com.floydwiz.seaglass.material.GlassSurface
 import com.floydwiz.seaglass.material.LocalGlassLayers
 import com.floydwiz.seaglass.material.LocalGlassOverrides
-import com.floydwiz.seaglass.material.glassBoardBackground
+import com.floydwiz.seaglasssample.showcase.glassBoardBackground
 import com.floydwiz.seaglass.material.glassOnSurfaceVariant
 import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark

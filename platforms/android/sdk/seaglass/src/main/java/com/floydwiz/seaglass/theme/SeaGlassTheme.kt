@@ -10,7 +10,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
-import com.floydwiz.seaglass.SeaGlassLabApi
 import com.floydwiz.seaglass.color.GlassRole
 import com.floydwiz.seaglass.tokens.SeaGlassDarkScheme
 import com.floydwiz.seaglass.tokens.SeaGlassLightScheme
@@ -19,7 +18,6 @@ import com.floydwiz.seaglass.color.SeaGlassRolePalettes
 import com.floydwiz.seaglass.tokens.TonalTones
 import com.floydwiz.seaglass.color.dynamicRolePalettes
 import com.floydwiz.seaglass.color.withContrast
-import com.floydwiz.seaglass.material.GlassLayers
 import com.floydwiz.seaglass.material.LocalGlassClock
 import com.floydwiz.seaglass.material.LocalGlassLayers
 import com.floydwiz.seaglass.material.LocalClockOwned
@@ -48,22 +46,6 @@ public fun SeaGlassTheme(
     lightDrift: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    SeaGlassTheme(GlassLayers.All, dark, contrast, reduceTransparency, dynamicColor, seedRole, lightDrift, content)
-}
-
-/** [SeaGlassTheme] with a switch per layer of the material, for labs and debugging. */
-@SeaGlassLabApi
-@Composable
-public fun SeaGlassTheme(
-    layers: GlassLayers,
-    dark: Boolean = isSystemInDarkTheme(),
-    contrast: SeaGlassContrast = SeaGlassContrast.Standard,
-    reduceTransparency: Boolean = false,
-    dynamicColor: Boolean = false,
-    seedRole: GlassRole = GlassRole.Aqua,
-    lightDrift: Boolean = false,
-    content: @Composable () -> Unit,
-) {
     val context = LocalContext.current
     val colorScheme = when {
         dynamicColor && dark -> dynamicDarkColorScheme(context)
@@ -76,13 +58,13 @@ public fun SeaGlassTheme(
     }
     val contrastScheme = remember(colorScheme, contrast, dark, palettes, seedRole) { colorScheme.withContrast(contrast, dark, palettes[seedRole]) }
 
+    val layers = LocalGlassLayers.current
     val clockOwned = LocalClockOwned.current
     val motionScale = if (clockOwned) LocalMotionScale.current else rememberAnimatorScale()
     val motionEnabled = motionScale > 0f
     val clock = if (clockOwned) LocalGlassClock.current else rememberGlassClock(running = motionEnabled && layers.light && lightDrift, motionScale = motionScale * SeaGlassTokens.Motion.slowdown)
 
     CompositionLocalProvider(
-        LocalGlassLayers provides layers,
         LocalGlassClock provides clock,
         LocalClockOwned provides true,
         LocalMotionScale provides motionScale,

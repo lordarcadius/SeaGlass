@@ -58,7 +58,7 @@ import com.floydwiz.seaglass.shape.SeaGlassShape
 import com.floydwiz.seaglass.theme.LocalRolePalettes
 import com.floydwiz.seaglass.theme.LocalSeaGlassDark
 import com.floydwiz.seaglass.theme.SeaGlassContrast
-import com.floydwiz.seaglass.theme.SeaGlassTheme
+import com.floydwiz.seaglasssample.showcase.LabTheme
 import com.floydwiz.seaglasssample.R
 import com.floydwiz.seaglasssample.control.LocalControls
 import com.floydwiz.seaglasssample.showcase.catalogue.PhotoStrip
@@ -133,7 +133,7 @@ private fun Heading(title: String, note: String) {
 @Composable
 private fun ModeFrame(mode: Mode, modifier: Modifier) {
     val controls = LocalControls.current
-    SeaGlassTheme(
+    LabTheme(
         dark = LocalSeaGlassDark.current,
         contrast = mode.contrast,
         reduceTransparency = mode.reduceTransparency,
@@ -156,7 +156,7 @@ private fun ModeFrame(mode: Mode, modifier: Modifier) {
 @Composable
 private fun BoardScope(content: @Composable () -> Unit) {
     val controls = LocalControls.current
-    SeaGlassTheme(
+    LabTheme(
         dark = true, contrast = controls.effectiveContrast, reduceTransparency = controls.effectiveReduceTransparency,
         dynamicColor = controls.dynamicColor, seedRole = controls.seedRole, layers = controls.layers,
     ) { CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface, content = content) }

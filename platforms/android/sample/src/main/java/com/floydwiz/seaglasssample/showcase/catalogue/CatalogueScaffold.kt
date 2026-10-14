@@ -51,8 +51,8 @@ import androidx.compose.ui.unit.sp
 import com.floydwiz.seaglass.material.GlassBackdrop
 import com.floydwiz.seaglass.material.GlassState
 import com.floydwiz.seaglass.material.LocalForcedGlassState
-import com.floydwiz.seaglass.material.glassBoardBackground
-import com.floydwiz.seaglass.theme.SeaGlassTheme
+import com.floydwiz.seaglasssample.showcase.glassBoardBackground
+import com.floydwiz.seaglasssample.showcase.LabTheme
 import com.floydwiz.seaglasssample.control.LocalControls
 
 /** State chosen in the picker; applied to every specimen that does not set its own. */
@@ -111,7 +111,7 @@ fun CatalogueSection(title: String, grade: String, note: String, content: @Compo
 @Composable
 fun BoardTheme(dark: Boolean, content: @Composable () -> Unit) {
     val controls = LocalControls.current
-    SeaGlassTheme(
+    LabTheme(
         dark = dark,
         contrast = controls.effectiveContrast,
         reduceTransparency = controls.effectiveReduceTransparency,
