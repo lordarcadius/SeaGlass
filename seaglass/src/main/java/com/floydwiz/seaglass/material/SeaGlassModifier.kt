@@ -188,16 +188,22 @@ internal fun Modifier.seaGlass(
 
     var chain: Modifier = this
     if (stages == Stages.All || stages == Stages.Frame) {
-        chain = chain
-            .glassTransform(interaction)
-            .glassHalo(context, shape, interaction)
-            .glassBehind(finish, context, shape, layers, interaction)
+        val frame = remember(finish, context, shape, layers, interaction) {
+            Modifier
+                .glassTransform(interaction)
+                .glassHalo(context, shape, interaction)
+                .glassBehind(finish, context, shape, layers, interaction)
+        }
+        chain = chain.then(frame)
     }
     if (stages == Stages.All || stages == Stages.Body) {
         chain = chain.clip(shape).then(bodyTransform).glassBody(body, backdrop, rank, layers.body)
     }
     if (stages == Stages.All || stages == Stages.Inner) {
-        chain = chain.clip(shape).glassInner(finish, context, shape, layers, clock, motion, grain, interaction, contentColor)
+        val inner = remember(finish, context, shape, layers, clock, motion, grain, interaction, contentColor) {
+            Modifier.glassInner(finish, context, shape, layers, clock, motion, grain, interaction, contentColor)
+        }
+        chain = chain.clip(shape).then(inner)
     }
     return chain
 }

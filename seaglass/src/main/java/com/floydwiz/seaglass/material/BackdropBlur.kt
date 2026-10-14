@@ -105,7 +105,7 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
         val key = if (requested in variants || variants.size < MaxVariants) {
             requested
         } else {
-            variants.keys.filter { it.includesLayer == requested.includesLayer }.minByOrNull { abs(it.blur - requested.blur) + abs(it.saturation - requested.saturation) + abs(it.brightness - requested.brightness) } ?: variants.keys.first()
+            variants.keys.filter { it.includesLayer == requested.includesLayer }.minByOrNull { abs(it.blur - requested.blur) + abs(it.saturation - requested.saturation) + abs(it.brightness - requested.brightness) } ?: requested
         }
         val variant = variants.getOrPut(key) { BlurVariant(graphicsContext.createGraphicsLayer(), graphicsContext.createGraphicsLayer()) }
         if (variant.size != size || variant.density != density) record(variant, key, density)
@@ -163,27 +163,30 @@ internal fun Modifier.backdropBlur(
 ): Modifier {
     val state = backdrop?.takeIf { rank != BackdropRank.Backdrop }
     val origin = remember { mutableStateOf(Offset.Unspecified) }
-    val tracked = if (state != null) {
-        Modifier.onGloballyPositioned { origin.value = state.offsetOf(it) ?: Offset.Unspecified }
-    } else {
-        Modifier
-    }
-    return this.then(tracked).drawBehind {
-        val at = origin.value
-        if (state != null && at.isSpecified && state.size != IntSize.Zero) {
-            val includesLayer = rank == BackdropRank.Content
-            val bounds = Rect(Offset.Zero, size)
-            with(state) {
-                if (mask == null) {
-                    drawBlurred(at, blur, saturation, brightness, includesLayer)
-                } else {
-                    drawContext.canvas.saveLayer(bounds, Paint())
-                    drawBlurred(at, blur, saturation, brightness, includesLayer)
-                    drawRect(brush = mask, blendMode = BlendMode.DstIn)
-                    drawContext.canvas.restore()
+    val draw = remember(state, rank, blur, saturation, brightness, fills, mask) {
+        val tracked = if (state != null) {
+            Modifier.onGloballyPositioned { origin.value = state.offsetOf(it) ?: Offset.Unspecified }
+        } else {
+            Modifier
+        }
+        tracked.drawBehind {
+            val at = origin.value
+            if (state != null && at.isSpecified && state.size != IntSize.Zero) {
+                val includesLayer = rank == BackdropRank.Content
+                val bounds = Rect(Offset.Zero, size)
+                with(state) {
+                    if (mask == null) {
+                        drawBlurred(at, blur, saturation, brightness, includesLayer)
+                    } else {
+                        drawContext.canvas.saveLayer(bounds, Paint())
+                        drawBlurred(at, blur, saturation, brightness, includesLayer)
+                        drawRect(brush = mask, blendMode = BlendMode.DstIn)
+                        drawContext.canvas.restore()
+                    }
                 }
             }
+            fills.forEach { drawRect(it) }
         }
-        fills.forEach { drawRect(it) }
     }
+    return this.then(draw)
 }

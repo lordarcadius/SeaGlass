@@ -24,7 +24,7 @@ class BaselineProfileGenerator {
     val rule = BaselineProfileRule()
 
     @Test
-    fun generate() = rule.collect(packageName = Target, includeInStartupProfile = true) {
+    fun generate() = rule.collect(packageName = Target, maxIterations = 3, stableIterations = 2, includeInStartupProfile = true) {
         for (route in Routes) {
             pressHome()
             startActivityAndWait(Intent().setClassName(Target, "$Target.MainActivity").putExtra("route", route).putExtra("theme", "Light").putExtra("contrast", "Standard"))

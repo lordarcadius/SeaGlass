@@ -294,5 +294,6 @@ Details, measurements and open items are in `docs/seaglass/performance.md`.
 - Idle screens now render 0 frames: the light drift is opt-in (`Animate light drift` in the controls). This is a visible change from the spec's always-on drift; the Motion lab still animates it.
 - Haze was replaced by one shared, downscaled, blurred copy per `GlassBackdrop` (`material/BackdropBlur.kt`) that every glass element crops. Edge diffusion and the FAB veil use it too. Windows other than the main one still cannot blur.
 - Shadow, caustic, contact and the static inset/rim/grain layers are cached as offscreen layers.
+- `seaGlass` remembers its draw modifiers, so the shadow and inset caches rebuild only when their inputs change; before, glass in scrolling lists rebuilt them every frame.
 - The app requests the fastest display mode at the current resolution.
 - Measured on a Primebook 3 (Mali-G57 MC2, 60 Hz only): the Buttons page scroll went from 51–65% janky frames and about 42 ms GPU per frame to 3.5–4.5% and about 19 ms; the photo library from 5–6% to 1–2% janky; idle Home from about 310 frames per 5 s to 0. Nothing above 60 Hz was verified.
