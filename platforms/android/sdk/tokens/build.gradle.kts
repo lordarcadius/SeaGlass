@@ -29,7 +29,7 @@ kotlin {
     explicitApi()
 }
 
-apply(from = rootProject.file("../../core/codegen/kotlin/seaglass-tokens.gradle.kts"))
+apply(from = rootProject.file("../../../core/codegen/kotlin/seaglass-tokens.gradle.kts"))
 apply(from = rootProject.file("gradle/sdk-publishing.gradle.kts"))
 
 dependencies {

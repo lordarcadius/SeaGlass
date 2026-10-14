@@ -5,7 +5,7 @@
 ## Updating
 
 1. Download `tokens.json` from the design system and replace the file here.
-2. Run `./gradlew :sdk:tokens:generateSeaGlassTokens` from `platforms/android`.
+2. Run `./gradlew :tokens:generateSeaGlassTokens` from `platforms/android/sdk`.
 3. Review the diff of the generated Kotlin and commit both.
 
 `verifySeaGlassTokens` runs before every build (`preBuild`) and in `check`. It fails, listing the files, whenever the committed Kotlin no longer matches these JSON files.
@@ -32,6 +32,6 @@ Hand-written files can live in the same package; only files with the generated h
 
 Optional, in `gradle.properties`:
 
-- `seaglass.tokens.dir` — folder holding `tokens.json` and `palettes.json`, relative to the root project (the folder with `settings.gradle.kts`); default `<module>/design-tokens`. In the monorepo layout: `../../core/tokens`.
+- `seaglass.tokens.dir` — folder holding `tokens.json` and `palettes.json`, relative to the root project (the folder with `settings.gradle.kts`); default `<module>/design-tokens`. In the monorepo layout: `../../../core/tokens`.
 - `seaglass.tokens.package` — default `<android namespace>.tokens`
 - `seaglass.tokens.srcDir` — default `src/main/kotlin`

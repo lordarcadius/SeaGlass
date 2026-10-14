@@ -1,6 +1,6 @@
 # Progress
 
-> Written before the monorepo layout: `:app` is now `:sample`, `:seaglass` is `:sdk:seaglass`, and the files this document names under `docs/seaglass/` moved to `core/` and `platforms/android/docs/` (see the root `CLAUDE.md`).
+> Written before the monorepo layout: `:app` now lives in the Gradle project `platforms/android/sample`, `:seaglass` in `platforms/android/sdk`, and the files this document names under `docs/seaglass/` moved to `core/` and `platforms/android/docs/` (see the root `CLAUDE.md`).
 
 Resume from the last entry. Each milestone records what was built, what was verified on a device, values chosen, and known gaps.
 
@@ -302,7 +302,7 @@ Details, measurements and open items are in `platforms/android/docs/performance.
 
 ## SDK split (1.0.0-alpha01)
 
-- `:sdk:tokens` (namespace `com.floydwiz.seaglass.tokens`) holds the generated tokens; `:sdk:seaglass` depends on it; `:sdk:bom` pins both to `seaglass.version`. `core/tokens` is the source; `verifySeaGlassTokens` runs before every build.
+- `:tokens` (namespace `com.floydwiz.seaglass.tokens`) holds the generated tokens; `:seaglass` depends on it; `:bom` pins both to `seaglass.version`. `core/tokens` is the source; `verifySeaGlassTokens` runs before every build.
 - The hand-copied palette and colour-scheme files are gone. The theme, roles and components read the generated palettes, schemes and token objects wherever the value is identical. Letter spacing and eight Material colour roles follow the tokens, so the catalogue, Motion lab and Accessibility lab pages render slightly differently from before; everything else renders pixel for pixel as before (checked on the tablet emulator against the previous commit plus only those token changes).
 - Both modules use explicit API mode. 6 declarations became internal; the hooks the rendering code reads for labs and debugging (`GlassClockScope`, `GlassOverrides`, `GlassLayers`, `GlassRecipeInfo`, `SeaGlassTokens.Motion.slowdown`) are public behind `@SeaGlassLabApi`. `glassBoardBackground` and the layers overload of `SeaGlassTheme` moved to the sample (`LabTheme`).
 - Not published to a repository; AARs come from `collectSdkAars`. The Maven publication definitions (POM, sources jar, BOM) exist without a repository; `-Pseaglass.fromAar=true` builds the sample from the AAR files.

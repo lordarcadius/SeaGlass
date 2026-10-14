@@ -1,6 +1,6 @@
 # Build plan
 
-> Written before the monorepo layout: `:app` is now `:sample`, `:seaglass` is `:sdk:seaglass`, and the files this document names under `docs/seaglass/` moved to `core/` and `platforms/android/docs/` (see the root `CLAUDE.md`).
+> Written before the monorepo layout: `:app` now lives in the Gradle project `platforms/android/sample`, `:seaglass` in `platforms/android/sdk`, and the files this document names under `docs/seaglass/` moved to `core/` and `platforms/android/docs/` (see the root `CLAUDE.md`).
 
 Run one milestone per Claude Code session: start each in plan mode, approve the plan, let it implement and verify, then commit and `/clear` before the next. Paste the prompt under each heading, or run `/sg-milestone <number>`.
 

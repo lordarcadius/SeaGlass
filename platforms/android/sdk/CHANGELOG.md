@@ -2,9 +2,9 @@
 
 ## 1.0.0-alpha01
 
-First split of the Android SDK into `:sdk:tokens`, `:sdk:seaglass` and `:sdk:bom`.
+First split of the Android SDK into `:tokens`, `:seaglass` and `:bom`.
 
-- Tokens: palettes, colour schemes, type scale, dimensions, shapes and shadows are generated from `core/tokens` into `:sdk:tokens`. The theme, roles and components read them in place of hand-copied values.
+- Tokens: palettes, colour schemes, type scale, dimensions, shapes and shadows are generated from `core/tokens` into `:tokens`. The theme, roles and components read them in place of hand-copied values.
 - Material 3 colour roles that were left at Material's defaults now use the Sea Glass values: `background`, `onBackground`, `surfaceVariant`, `inverseSurface`, `inverseOnSurface`, `inversePrimary`, `surfaceBright`, `surfaceDim`.
 - Letter spacing of `displayLarge` (-0.25 sp), `titleMedium` (0.15 sp) and `bodyMedium` (0.25 sp) follows the tokens.
 - Explicit API mode is on in both modules. Rendering internals, interaction state helpers and unused token groups are internal. Controls for labs and debugging are public behind `@SeaGlassLabApi`.

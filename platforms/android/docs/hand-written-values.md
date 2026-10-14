@@ -1,6 +1,6 @@
 # Values still written by hand in the Android SDK
 
-`core/tokens/tokens.json` is exported from the design system, so these values cannot be added to it from this repository. Each one is hard-coded in the SDK because the export has no token for it. To move one into the tokens, add it in the design system, re-export `tokens.json` and run `./gradlew :sdk:tokens:generateSeaGlassTokens`.
+`core/tokens/tokens.json` is exported from the design system, so these values cannot be added to it from this repository. Each one is hard-coded in the SDK because the export has no token for it. To move one into the tokens, add it in the design system, re-export `tokens.json` and run `./gradlew :tokens:generateSeaGlassTokens` from `platforms/android/sdk`.
 
 | Group | Values | Where |
 | --- | --- | --- |

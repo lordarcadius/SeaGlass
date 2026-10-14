@@ -4,9 +4,11 @@ Sea Glass is a frosted, diffusing glass material and a set of Jetpack Compose co
 
 | Module | Namespace | Contents |
 | --- | --- | --- |
-| `:sdk:tokens` | `com.floydwiz.seaglass.tokens` | Generated design tokens: palettes, colour schemes, type scale, dimensions, shapes, shadows. Source: `core/tokens`. |
-| `:sdk:seaglass` | `com.floydwiz.seaglass` | Theme, the glass material (`Modifier.seaGlass`, `GlassSurface`, `GlassBackdrop`) and the components. Depends on `:sdk:tokens`. |
-| `:sdk:bom` | | Pins the two modules to one version. |
+| `:tokens` | `com.floydwiz.seaglass.tokens` | Generated design tokens: palettes, colour schemes, type scale, dimensions, shapes, shadows. Source: `core/tokens`. |
+| `:seaglass` | `com.floydwiz.seaglass` | Theme, the glass material (`Modifier.seaGlass`, `GlassSurface`, `GlassBackdrop`) and the components. Depends on `:tokens`. |
+| `:bom` | | Pins the two modules to one version. |
+
+This folder is its own Gradle project; open it in Android Studio to work on the SDK. Run `./gradlew test` here for the unit tests.
 
 Requirements: minSdk 31, compileSdk 37, Compose BOM 2026.09.00 or newer, Kotlin 2.4.
 
@@ -14,15 +16,19 @@ Requirements: minSdk 31, compileSdk 37, Compose BOM 2026.09.00 or newer, Kotlin 
 
 The SDK is not published to any repository. Use it in one of two ways.
 
-**As Gradle modules** (this repository): include `:sdk:tokens` and `:sdk:seaglass` in the build and depend on them.
+**As an included build** (this repository): the sample project includes this one, and Gradle substitutes the SDK modules for their coordinates.
 
 ```kotlin
+// settings.gradle.kts
+includeBuild("../sdk")
+
+// app/build.gradle.kts
 dependencies {
-    implementation(project(":sdk:seaglass"))
+    implementation("com.floydwiz.seaglass:seaglass:1.0.0-alpha01")
 }
 ```
 
-**As AAR files**: run `./gradlew collectSdkAars` from `platforms/android`. It writes `build/sdk-aar/tokens-1.0.0-alpha01.aar` and `build/sdk-aar/seaglass-1.0.0-alpha01.aar`. Copy both to the app. An AAR carries no dependency metadata, so the app also needs:
+**As AAR files**: run `./gradlew collectSdkAars` from this folder. It writes `build/sdk-aar/tokens-1.0.0-alpha01.aar` and `build/sdk-aar/seaglass-1.0.0-alpha01.aar`. Copy both to the app. An AAR carries no dependency metadata, so the app also needs:
 
 ```kotlin
 dependencies {
@@ -36,7 +42,7 @@ dependencies {
 }
 ```
 
-`-Pseaglass.fromAar=true` builds the sample app this way, to test the AAR setup.
+`./gradlew -Pseaglass.fromAar=true :app:assembleDebug` in `platforms/android/sample` builds the sample app this way, to test the AAR setup.
 
 When the SDK is published, the coordinates will be `com.floydwiz.seaglass:{tokens,seaglass,bom}:1.0.0-alpha01`, used as a BOM:
 

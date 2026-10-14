@@ -39,7 +39,7 @@ kotlin {
 apply(from = rootProject.file("gradle/sdk-publishing.gradle.kts"))
 
 dependencies {
-    api(project(":sdk:tokens"))
+    api(project(":tokens"))
     api(platform(libs.androidx.compose.bom))
     api(libs.androidx.compose.foundation)
     api(libs.androidx.compose.material3)

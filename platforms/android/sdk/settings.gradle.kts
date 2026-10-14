@@ -20,11 +20,14 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
 }
 
-rootProject.name = "Sea Glass Sample"
-include(":sdk:bom")
-include(":sdk:tokens")
-include(":sdk:seaglass")
-include(":sample")
-include(":benchmark")
+rootProject.name = "sea-glass-sdk"
+include(":bom")
+include(":tokens")
+include(":seaglass")
