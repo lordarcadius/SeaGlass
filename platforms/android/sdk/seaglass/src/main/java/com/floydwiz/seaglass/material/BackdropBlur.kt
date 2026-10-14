@@ -56,6 +56,11 @@ private class BlurVariant(val low: GraphicsLayer, val blurred: GraphicsLayer) {
     var density = 0f
 }
 
+internal fun blurKey(blur: Float, saturation: Float, brightness: Float, includesLayer: Boolean) =
+    BlurKey(quantise(blur, 2f), quantise(saturation, 100f), quantise(brightness, 100f), includesLayer)
+
+private fun quantise(value: Float, steps: Float) = (value * steps).roundToInt() / steps
+
 /**
  * The shared blurred copies of one [GlassBackdrop], built once and cropped by every glass element.
  * - [base] and [layer] are the recorded sources; a source re-records only when its own content draws again.
@@ -76,7 +81,7 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
     private val holders = HashMap<BlurKey, Int>()
 
     fun keyFor(blur: Float, saturation: Float, brightness: Float, includesLayer: Boolean) =
-        BlurKey(quantise(blur, 2f), quantise(saturation, 100f), quantise(brightness, 100f), includesLayer && hasLayerSource)
+        blurKey(blur, saturation, brightness, includesLayer && hasLayerSource)
 
     fun acquire(key: BlurKey) {
         holders[key] = (holders[key] ?: 0) + 1
@@ -121,8 +126,6 @@ internal class GlassBackdropState(private val graphicsContext: GraphicsContext) 
         val factor = variant.downscale.toFloat()
         translate(-origin.x, -origin.y) { scale(factor, factor, pivot = Offset.Zero) { drawLayer(variant.blurred) } }
     }
-
-    private fun quantise(value: Float, steps: Float) = (value * steps).roundToInt() / steps
 
     private fun variantFor(key: BlurKey, density: Float): BlurVariant {
         val variant = variants.getOrPut(key) { BlurVariant(graphicsContext.createGraphicsLayer(), graphicsContext.createGraphicsLayer()) }
