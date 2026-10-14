@@ -54,7 +54,8 @@ Thumbs.db
 # Verification screenshots
 # --------------------------
 /screenshots/
+/platforms/android/screenshots/
 
-# Perfetto traces from tools/perf
-/perf-out/
+# Perfetto traces from platforms/android/tools/perf
+/platforms/android/perf-out/
 __pycache__/
