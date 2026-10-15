@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -174,7 +175,6 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
         Box(
             Modifier
                 .size(tabWidth * count + 8.dp, BarHeight)
-                .semantics { this.role = Role.Tab }
                 .pointerInput(count, tabPx) {
                     awaitEachGesture {
                         val down = awaitFirstDown()
@@ -236,7 +236,16 @@ private fun FullBar(tabs: List<TabItem>, selectedIndex: Int, onSelect: (Int) -> 
                     val magnified = pressing && index == hot
                     val color = if (selected) glassOnRole(role) else ink
                     val itemSource = remember { MutableInteractionSource() }
-                    Box(Modifier.size(tabWidth, BarHeight - 8.dp).hoverable(itemSource).semantics { this.selected = index == selectedIndex }) {
+                    Box(
+                        Modifier
+                            .size(tabWidth, BarHeight - 8.dp)
+                            .hoverable(itemSource)
+                            .semantics(mergeDescendants = true) {
+                                this.selected = index == selectedIndex
+                                this.role = Role.Tab
+                                onClick { onSelect(index); true }
+                            },
+                    ) {
                         CompositionLocalProvider(LocalForcedGlassState provides previewStates[index]) {
                         GlassSurface(
                             finish = GlassFinish.Plain,

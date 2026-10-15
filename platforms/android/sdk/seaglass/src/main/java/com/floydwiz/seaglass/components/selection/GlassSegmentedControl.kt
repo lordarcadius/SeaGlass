@@ -33,6 +33,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -105,7 +106,6 @@ public fun GlassSegmentedControl(
     Box(
         modifier
             .size(segmentWidth * count + 8.dp, SeaGlassSizeTokens.Segmented)
-            .semantics { this.role = Role.RadioButton }
             .pointerInput(count, segmentPx, enabled) {
                 if (!enabled) return@pointerInput
                 awaitEachGesture {
@@ -194,7 +194,14 @@ public fun GlassSegmentedControl(
                 }
                 val itemSource = remember { MutableInteractionSource() }
                 Box(
-                    Modifier.size(segmentWidth, 32.dp).hoverable(itemSource).semantics { selected = index == selectedIndex },
+                    Modifier
+                        .size(segmentWidth, 32.dp)
+                        .hoverable(itemSource)
+                        .semantics(mergeDescendants = true) {
+                            selected = index == selectedIndex
+                            this.role = Role.RadioButton
+                            if (enabled) onClick { onSelect(index); true }
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     CompositionLocalProvider(LocalForcedGlassState provides (if (hoveredIndex == index) GlassState.Hover else null)) {
