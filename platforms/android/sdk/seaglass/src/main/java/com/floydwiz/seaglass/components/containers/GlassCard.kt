@@ -111,6 +111,7 @@ public fun GlassInsetList(modifier: Modifier = Modifier, content: @Composable Co
  * One row of a [GlassInsetList].
  * - Hover adds a 7% layer, press dips the row into a well and selection fills it with a frost capsule.
  * - [leadingIcon] sits in a 32 dp glass tile with 11 dp corners, tinted by [leadingRole].
+ * - [maxLines] limits the title and the supporting text; the row grows when they wrap.
  */
 @Composable
 public fun GlassListRow(
@@ -124,6 +125,7 @@ public fun GlassListRow(
     selected: Boolean = false,
     enabled: Boolean = true,
     divider: Boolean = true,
+    maxLines: Int = 1,
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val source = remember { MutableInteractionSource() }
@@ -167,9 +169,9 @@ public fun GlassListRow(
                     )
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(title, color = LocalContentColor.current, fontSize = 15.5.sp, fontWeight = FontWeight(if (selected) 650 else 550), maxLines = 1)
+                    Text(title, color = LocalContentColor.current, fontSize = 15.5.sp, fontWeight = FontWeight(if (selected) 650 else 550), maxLines = maxLines)
                     if (supporting != null) {
-                        Text(supporting, color = if (selected) LocalContentColor.current.copy(alpha = 0.8f) else glassOnSurfaceVariant(), fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                        Text(supporting, color = if (selected) LocalContentColor.current.copy(alpha = 0.8f) else glassOnSurfaceVariant(), fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = maxLines)
                     }
                 }
                 if (trailing != null) trailing()
