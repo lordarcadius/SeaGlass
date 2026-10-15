@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     constraints {
-        api(project(":tokens"))
         api(project(":seaglass"))
     }
 }

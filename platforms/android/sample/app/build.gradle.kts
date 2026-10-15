@@ -75,13 +75,13 @@ val seaGlassFromAar = providers.gradleProperty("seaglass.fromAar").orNull == "tr
 
 if (seaGlassFromAar) {
     tasks.matching { it.name == "preBuild" }.configureEach {
-        dependsOn(gradle.includedBuild("sdk").task(":collectSdkAars"))
+        dependsOn(gradle.includedBuild("sdk").task(":collectSdkAar"))
     }
 }
 
 dependencies {
     if (seaGlassFromAar) {
-        implementation(files("../../sdk/build/sdk-aar/tokens-$seaGlassVersion.aar", "../../sdk/build/sdk-aar/seaglass-$seaGlassVersion.aar"))
+        implementation(files("../../sdk/build/sdk-aar/seaglass-$seaGlassVersion.aar"))
         implementation(libs.androidx.graphics.shapes)
     } else {
         implementation("com.floydwiz.seaglass:seaglass:$seaGlassVersion")

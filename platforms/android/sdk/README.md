@@ -4,9 +4,8 @@ Sea Glass is a frosted, diffusing glass material and a set of Jetpack Compose co
 
 | Module | Namespace | Contents |
 | --- | --- | --- |
-| `:tokens` | `com.floydwiz.seaglass.tokens` | Generated design tokens: palettes, colour schemes, type scale, dimensions, shapes, shadows. Source: `core/tokens`. |
-| `:seaglass` | `com.floydwiz.seaglass` | Theme, the glass material (`Modifier.seaGlass`, `GlassSurface`, `GlassBackdrop`) and the components. Depends on `:tokens`. |
-| `:bom` | | Pins the two modules to one version. |
+| `:seaglass` | `com.floydwiz.seaglass` | Theme, the glass material (`Modifier.seaGlass`, `GlassSurface`, `GlassBackdrop`) and the components. Its `com.floydwiz.seaglass.tokens` package holds the generated design tokens (palettes, colour schemes, type scale, dimensions, shapes, shadows) from `core/tokens`. |
+| `:bom` | | Pins the SDK to one version. |
 
 This folder is its own Gradle project; open it in Android Studio to work on the SDK. Run `./gradlew test` here for the unit tests.
 
@@ -28,11 +27,11 @@ dependencies {
 }
 ```
 
-**As AAR files**: run `./gradlew collectSdkAars` from this folder. It writes `build/sdk-aar/tokens-1.0.0-alpha01.aar` and `build/sdk-aar/seaglass-1.0.0-alpha01.aar`. Copy both to the app. An AAR carries no dependency metadata, so the app also needs:
+**As an AAR file**: run `./gradlew collectSdkAar` from this folder. It writes `build/sdk-aar/seaglass-1.0.0-alpha01.aar`. Copy it to the app. An AAR carries no dependency metadata, so the app also needs:
 
 ```kotlin
 dependencies {
-    implementation(files("libs/tokens-1.0.0-alpha01.aar", "libs/seaglass-1.0.0-alpha01.aar"))
+    implementation(files("libs/seaglass-1.0.0-alpha01.aar"))
     implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.foundation:foundation")
@@ -44,7 +43,7 @@ dependencies {
 
 `./gradlew -Pseaglass.fromAar=true :app:assembleDebug` in `platforms/android/sample` builds the sample app this way, to test the AAR setup.
 
-When the SDK is published, the coordinates will be `com.floydwiz.seaglass:{tokens,seaglass,bom}:1.0.0-alpha01`, used as a BOM:
+When the SDK is published, the coordinates will be `com.floydwiz.seaglass:{seaglass,bom}:1.0.0-alpha01`, used as a BOM:
 
 ```kotlin
 dependencies {

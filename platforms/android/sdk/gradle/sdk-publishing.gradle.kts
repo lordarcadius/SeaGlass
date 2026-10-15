@@ -2,7 +2,6 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 
 val descriptions = mapOf(
-    "tokens" to "Sea Glass design tokens: palettes, colour schemes, type scale, dimensions, shapes and shadows.",
     "seaglass" to "Sea Glass material, theme and components for Jetpack Compose.",
     "bom" to "Pins the Sea Glass modules to one version.",
 )

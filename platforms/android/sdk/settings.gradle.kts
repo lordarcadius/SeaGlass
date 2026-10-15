@@ -29,5 +29,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "sea-glass-sdk"
 include(":bom")
-include(":tokens")
 include(":seaglass")
